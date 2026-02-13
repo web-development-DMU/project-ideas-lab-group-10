@@ -1,0 +1,12 @@
+body {
+    background-color: rgb(180, 207, 168);
+}
+h2{
+    font-display: center;
+}
+.pic1{
+    max-height: 300px;
+}
+.pic2{
+    max-height: 300px;
+}
