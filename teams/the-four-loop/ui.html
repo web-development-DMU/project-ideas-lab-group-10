@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Four Loop – UI Documentation</title>
+
+  <link rel="stylesheet" href="../style-example.css" />
+  <link rel="stylesheet" href="./team.css" />
+</head>
+
+<body>
+  <header>
+    <nav aria-label="Team navigation">
+      <a href="/teams/index.html">← Back to Teams</a>
+      <a href="./index.html">Team Home</a>
+      <a href="./ui.html" aria-current="page">UI</a>
+      <a href="./db.html">Database</a>
+      <a href="./routes.html">Routes</a>
+      <a href="./architecture.html">Architecture</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>UI & Accessibility Documentation</h1>
+    <p>
+      This page documents the planned user interface for <strong>SourceFlow</strong> and explains how we will use
+      semantic HTML and accessibility best practices to support all users.
+    </p>
+
+    <section aria-labelledby="ui-goals">
+      <h2 id="ui-goals">UI goals</h2>
+      <ul>
+        <li>Clean, consistent navigation across pages.</li>
+        <li>Semantic HTML structure (headings, sections, forms, tables).</li>
+        <li>Accessible form design (labels, required fields, clear feedback).</li>
+        <li>Simple screens that map directly to CRUD actions.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="users">
+      <h2 id="users">User types</h2>
+      <ul>
+        <li><strong>Customer:</strong> creates and edits their shopping requests.</li>
+        <li><strong>Concierge:</strong> reviews requests, updates status, and adds notes.</li>
+      </ul>
+      <p>
+        We may begin with one interface and expose concierge actions as admin-only routes in later iterations.
+      </p>
+    </section>
+
+    <section aria-labelledby="pages">
+      <h2 id="pages">Core pages and interactions</h2>
+
+      <article aria-labelledby="home">
+        <h3 id="home">1) Home (GET /)</h3>
+        <p>Landing page with calls-to-action: create a request and view requests.</p>
+      </article>
+
+      <article aria-labelledby="new-request">
+        <h3 id="new-request">2) New request form (GET /requests/new)</h3>
+        <p>A form to create a new sourcing request.</p>
+        <ul>
+          <li><strong>Item name</strong> (required)</li>
+          <li>Brand (optional)</li>
+          <li>Budget (GBP) (optional)</li>
+          <li>Size (optional)</li>
+          <li>Colour (optional)</li>
+          <li>Notes (optional)</li>
+        </ul>
+        <p>Submit sends a POST request to create the request.</p>
+      </article>
+
+      <article aria-labelledby="list">
+        <h3 id="list">3) Requests list (GET /requests)</h3>
+        <p>
+          Requests are displayed in a table view. Each request row includes key fields and actions.
+        </p>
+        <ul>
+          <li>Columns: Item, Brand, Budget, Status, Created, Actions</li>
+          <li>Actions: View/Edit, Update status, Delete</li>
+        </ul>
+      </article>
+
+      <article aria-labelledby="edit">
+        <h3 id="edit">4) Request detail / edit (GET /requests/:id/edit)</h3>
+        <p>
+          Allows updating request details and (concierge-side) status and notes.
+        </p>
+      </article>
+    </section>
+
+    <section aria-labelledby="semantics">
+      <h2 id="semantics">Semantic HTML plan</h2>
+      <ul>
+        <li>Use correct heading hierarchy: one <code>&lt;h1&gt;</code>, then <code>&lt;h2&gt;</code>/<code>&lt;h3&gt;</code>.</li>
+        <li>Use <code>&lt;section&gt;</code> and <code>&lt;article&gt;</code> to group content logically.</li>
+        <li>Forms: every input has a <code>&lt;label for&gt;</code> matching the input <code>id</code>.</li>
+        <li>Requests list uses <code>&lt;table&gt;</code> with <code>&lt;caption&gt;</code>, <code>&lt;thead&gt;</code>, and scoped headers.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="a11y">
+      <h2 id="a11y">Accessibility checklist</h2>
+      <ul>
+        <li>Keyboard navigation supported (logical tab order, visible focus).</li>
+        <li>Required fields indicated in text and using HTML validation (<code>required</code>).</li>
+        <li>Clear error feedback near inputs (no vague errors).</li>
+        <li>Status is not communicated by colour alone (text labels like “Pending”).</li>
+        <li>Images include meaningful <code>alt</code> text; decorative images use <code>alt=""</code>.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="wireframes">
+      <h2 id="wireframes">Wireframes / sketches</h2>
+      <p>
+        Add sketches here. Draw on paper, take photos, crop, and keep each image under 500KB.
+      </p>
+
+      <figure>
+        <img src="./images/home-wireframe.png" alt="Wireframe sketch of SourceFlow home page layout." />
+        <figcaption>Home page wireframe (placeholder).</figcaption>
+      </figure>
+
+      <figure>
+        <img src="./images/new-request-wireframe.png" alt="Wireframe sketch of the new request form fields and layout." />
+        <figcaption>New request form wireframe (placeholder).</figcaption>
+      </figure>
+
+      <figure>
+        <img src="./images/requests-list-wireframe.png" alt="Wireframe sketch of the requests list table layout with actions." />
+        <figcaption>Requests list wireframe (placeholder).</figcaption>
+      </figure>
+    </section>
+
+    <section aria-labelledby="next">
+      <h2 id="next">Next steps</h2>
+      <ol>
+        <li>Create and add the three wireframe images into <code>/teams/the-four-loop/images/</code>.</li>
+        <li>Ensure UI field names match the database schema exactly.</li>
+        <li>Build HTML prototypes for the form and table pages for early feedback.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <p><a href="./index.html">Back to Team Home</a></p>
+  </footer>
+</body>
+</html>

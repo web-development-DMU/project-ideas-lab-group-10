@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Four Loop – Application Architecture</title>
+
+  <link rel="stylesheet" href="../style-example.css" />
+  <link rel="stylesheet" href="./team.css" />
+</head>
+
+<body>
+  <header>
+    <nav aria-label="Team navigation">
+      <a href="/teams/index.html">← Back to Teams</a>
+      <a href="./index.html">Team Home</a>
+      <a href="./ui.html">UI</a>
+      <a href="./db.html">Database</a>
+      <a href="./routes.html">Routes</a>
+      <a href="./architecture.html" aria-current="page">Architecture</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Application Architecture</h1>
+    <p>
+      This page explains how SourceFlow will be structured as a simple database-driven web application using
+      a JavaScript web server (Deno) and an SQLite database.
+    </p>
+
+    <section aria-labelledby="diagram">
+      <h2 id="diagram">High-level diagram</h2>
+      <pre>
+Browser (HTML/CSS)
+   │ HTTP (GET/POST)
+   ▼
+Deno Web Server (routing + handlers)
+   │ SQL queries
+   ▼
+SQLite Database (customers, requests, statuses, request_notes)
+      </pre>
+      <p>
+        The browser requests pages via HTTP. The server handles routes, queries the database, and returns HTML
+        responses with linked CSS.
+      </p>
+    </section>
+
+    <section aria-labelledby="lifecycle">
+      <h2 id="lifecycle">Typical request lifecycle</h2>
+      <ol>
+        <li>User visits <code>/requests/new</code> (GET) → server returns an HTML form.</li>
+        <li>User submits form to <code>/requests</code> (POST) → server validates inputs.</li>
+        <li>Server inserts the row into <code>requests</code> and responds with a 303 redirect.</li>
+        <li>Browser follows redirect to <code>/requests</code> (GET) → updated list is displayed.</li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="structure">
+      <h2 id="structure">Planned code structure (proposal)</h2>
+      <ul>
+        <li><strong>main.js</strong> — starts the server and registers routes.</li>
+        <li><strong>routes/</strong> — functions that map (method + URL) to handlers.</li>
+        <li><strong>db/</strong> — SQLite connection + CRUD query functions.</li>
+        <li><strong>views/</strong> — reusable HTML templates or functions returning HTML strings.</li>
+        <li><strong>public/</strong> — static files (CSS, images).</li>
+      </ul>
+      <p>
+        Consistency is maintained by shared layout (common header/nav) and shared CSS.
+      </p>
+    </section>
+
+    <section aria-labelledby="maintain">
+      <h2 id="maintain">Consistency and maintainability</h2>
+      <ul>
+        <li>All pages share the same navigation menu.</li>
+        <li>Reusable “layout” template ensures the same structure on every page.</li>
+        <li>SQL is centralised in db functions to avoid duplication in route handlers.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p><a href="./index.html">Back to Team Home</a></p>
+  </footer>
+</body>
+</html>

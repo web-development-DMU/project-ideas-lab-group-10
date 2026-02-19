@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Four Loop – Routes & HTTP</title>
+
+  <link rel="stylesheet" href="../style-example.css" />
+  <link rel="stylesheet" href="./team.css" />
+</head>
+
+<body>
+  <header>
+    <nav aria-label="Team navigation">
+      <a href="/teams/index.html">← Back to Teams</a>
+      <a href="./index.html">Team Home</a>
+      <a href="./ui.html">UI</a>
+      <a href="./db.html">Database</a>
+      <a href="./routes.html" aria-current="page">Routes</a>
+      <a href="./architecture.html">Architecture</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Routes & HTTP Documentation</h1>
+    <p>
+      This page lists the resources/URLs for SourceFlow and explains which HTTP methods are used,
+      what data is sent, and what responses are returned.
+    </p>
+
+    <section aria-labelledby="resources">
+      <h2 id="resources">Resources (Collections)</h2>
+      <ul>
+        <li><strong>/requests</strong> — collection of shopping requests</li>
+        <li><strong>/requests/:id</strong> — single request</li>
+        <li><strong>/requests/:id/notes</strong> — notes for a request</li>
+        <li><strong>/requests/:id/status</strong> — status updates</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="routes">
+      <h2 id="routes">Route table</h2>
+      <table>
+        <caption>Planned HTTP routes for SourceFlow</caption>
+        <thead>
+          <tr>
+            <th scope="col">Method</th>
+            <th scope="col">URL</th>
+            <th scope="col">Purpose</th>
+            <th scope="col">Request Data</th>
+            <th scope="col">Response</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GET</td>
+            <td>/</td>
+            <td>Home page</td>
+            <td>None</td>
+            <td>200 HTML</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td>/requests</td>
+            <td>List requests</td>
+            <td>None</td>
+            <td>200 HTML</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td>/requests/new</td>
+            <td>New request form</td>
+            <td>None</td>
+            <td>200 HTML</td>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td>/requests</td>
+            <td>Create new request</td>
+            <td>item_name, brand, budget_gbp, size, colour, notes</td>
+            <td>303 Redirect → /requests</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td>/requests/:id</td>
+            <td>View one request</td>
+            <td>None</td>
+            <td>200 HTML</td>
+          </tr>
+          <tr>
+            <td>GET</td>
+            <td>/requests/:id/edit</td>
+            <td>Edit request form</td>
+            <td>None</td>
+            <td>200 HTML</td>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td>/requests/:id</td>
+            <td>Update request</td>
+            <td>same fields as create</td>
+            <td>303 Redirect → /requests/:id</td>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td>/requests/:id/delete</td>
+            <td>Delete request</td>
+            <td>None</td>
+            <td>303 Redirect → /requests</td>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td>/requests/:id/status</td>
+            <td>Update status</td>
+            <td>status_id</td>
+            <td>303 Redirect → /requests/:id</td>
+          </tr>
+          <tr>
+            <td>POST</td>
+            <td>/requests/:id/notes</td>
+            <td>Add concierge note</td>
+            <td>note_text</td>
+            <td>303 Redirect → /requests/:id</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="http-notes">
+      <h2 id="http-notes">HTTP semantics notes</h2>
+      <ul>
+        <li>We use <strong>GET</strong> for retrieving pages/resources.</li>
+        <li>We use <strong>POST</strong> for create/update/delete because HTML forms do not natively support PUT/DELETE.</li>
+        <li>After successful POST, the server responds with a <strong>303 redirect</strong> to prevent duplicate submissions on refresh.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p><a href="./index.html">Back to Team Home</a></p>
+  </footer>
+</body>
+</html>

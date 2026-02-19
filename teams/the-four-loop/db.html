@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Four Loop – Database Documentation</title>
+
+  <link rel="stylesheet" href="../style-example.css" />
+  <link rel="stylesheet" href="./team.css" />
+</head>
+
+<body>
+  <header>
+    <nav aria-label="Team navigation">
+      <a href="/teams/index.html">← Back to Teams</a>
+      <a href="./index.html">Team Home</a>
+      <a href="./ui.html">UI</a>
+      <a href="./db.html" aria-current="page">Database</a>
+      <a href="./routes.html">Routes</a>
+      <a href="./architecture.html">Architecture</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Database Structure (SQLite)</h1>
+    <p>
+      This page documents the relational database design for <strong>SourceFlow</strong>. The goal is a simple,
+      achievable schema that supports CRUD operations and clear relationships.
+    </p>
+
+    <section aria-labelledby="overview">
+      <h2 id="overview">Overview</h2>
+      <p>
+        SourceFlow stores customers and their shopping requests. Each request has a status and can have multiple
+        concierge notes. This provides a realistic relational structure without being overly complex.
+      </p>
+      <ul>
+        <li><strong>customers</strong> — who is making the request</li>
+        <li><strong>statuses</strong> — allowed request statuses</li>
+        <li><strong>requests</strong> — the main entity (what the customer wants)</li>
+        <li><strong>request_notes</strong> — concierge notes associated with a request</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="relationships">
+      <h2 id="relationships">Relationships</h2>
+      <ul>
+        <li>One <strong>customer</strong> can have many <strong>requests</strong>.</li>
+        <li>One <strong>status</strong> can be used by many <strong>requests</strong>.</li>
+        <li>One <strong>request</strong> can have many <strong>request_notes</strong>.</li>
+      </ul>
+      <pre>
+customers (1) ──── (many) requests (many) ──── (1) statuses
+requests (1) ──── (many) request_notes
+      </pre>
+    </section>
+
+    <section aria-labelledby="schema">
+      <h2 id="schema">Schema SQL (create tables)</h2>
+      <pre>
+CREATE TABLE IF NOT EXISTS customers (
+  customer_id INTEGER PRIMARY KEY,
+  full_name   TEXT NOT NULL,
+  email       TEXT UNIQUE NOT NULL,
+  phone       TEXT,
+  created_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS statuses (
+  status_id   INTEGER PRIMARY KEY,
+  status_name TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS requests (
+  request_id  INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL,
+  status_id   INTEGER NOT NULL,
+  item_name   TEXT NOT NULL,
+  brand       TEXT,
+  budget_gbp  REAL,
+  size        TEXT,
+  colour      TEXT,
+  notes       TEXT,
+  created_at  TEXT NOT NULL,
+  updated_at  TEXT NOT NULL,
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+  FOREIGN KEY (status_id)   REFERENCES statuses(status_id)
+);
+
+CREATE TABLE IF NOT EXISTS request_notes (
+  note_id    INTEGER PRIMARY KEY,
+  request_id INTEGER NOT NULL,
+  note_text  TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (request_id) REFERENCES requests(request_id)
+);
+      </pre>
+    </section>
+
+    <section aria-labelledby="crud">
+      <h2 id="crud">Key SQL queries (CRUD)</h2>
+
+      <h3>Create (INSERT)</h3>
+      <pre>
+INSERT INTO customers (full_name, email, phone, created_at)
+VALUES (?, ?, ?, ?);
+
+INSERT INTO requests (customer_id, status_id, item_name, brand, budget_gbp, size, colour, notes, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+INSERT INTO request_notes (request_id, note_text, created_at)
+VALUES (?, ?, ?);
+      </pre>
+
+      <h3>Read (SELECT)</h3>
+      <pre>
+SELECT
+  r.request_id,
+  c.full_name,
+  r.item_name,
+  r.brand,
+  r.budget_gbp,
+  r.size,
+  r.colour,
+  s.status_name,
+  r.created_at
+FROM requests r
+JOIN customers c ON r.customer_id = c.customer_id
+JOIN statuses s  ON r.status_id = s.status_id
+ORDER BY r.created_at DESC;
+
+SELECT
+  r.request_id,
+  c.full_name,
+  c.email,
+  r.item_name,
+  r.brand,
+  r.budget_gbp,
+  r.size,
+  r.colour,
+  r.notes,
+  s.status_name,
+  r.created_at,
+  r.updated_at
+FROM requests r
+JOIN customers c ON r.customer_id = c.customer_id
+JOIN statuses s  ON r.status_id = s.status_id
+WHERE r.request_id = ?;
+      </pre>
+
+      <h3>Update (UPDATE)</h3>
+      <pre>
+UPDATE requests
+SET item_name = ?,
+    brand = ?,
+    budget_gbp = ?,
+    size = ?,
+    colour = ?,
+    notes = ?,
+    updated_at = ?
+WHERE request_id = ?;
+
+UPDATE requests
+SET status_id = ?,
+    updated_at = ?
+WHERE request_id = ?;
+      </pre>
+
+      <h3>Delete (DELETE)</h3>
+      <pre>
+DELETE FROM request_notes WHERE request_id = ?;
+DELETE FROM requests WHERE request_id = ?;
+      </pre>
+    </section>
+  </main>
+
+  <footer>
+    <p><a href="./index.html">Back to Team Home</a></p>
+  </footer>
+</body>
+</html>
