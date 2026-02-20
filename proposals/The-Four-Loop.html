@@ -3,193 +3,386 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Four Loop – Proposal</title>
+  <title>The Four Loop – SourceFlow Proposal</title>
 
-  <!-- Reuse the module styling if your repo has it -->
+  <!-- Keep module stylesheet -->
   <link rel="stylesheet" href="../style-example.css" />
 
   <style>
-    /* Proposal-specific styling */
-    .hero {
-      min-height: 70vh;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      padding: 4rem 1.5rem;
-      color: #fff;
+    :root{
+      --bg: #0b0f19;
+      --panel: rgba(255,255,255,.08);
+      --panel-strong: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --border: rgba(255,255,255,.16);
+      --shadow: 0 18px 40px rgba(0,0,0,.35);
+      --radius: 16px;
+      --max: 1100px;
+      --accent: #ffffff;
+      --accentText: #101018;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    .wrap{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 1.25rem;
+    }
+
+    /* Top nav */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      padding: .75rem 1rem;
+      border: 1px solid #e6e6e6;
+      border-radius: var(--radius);
+      background: #fff;
+      margin: 1rem 0 1.25rem;
+    }
+    .topbar strong{
+      font-size: 1rem;
+      letter-spacing: .2px;
+    }
+    .nav{
+      display:flex;
+      gap:.9rem;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .nav a{
+      text-decoration:none;
+      font-weight:600;
+    }
+
+    /* Hero */
+    .hero{
+      position: relative;
+      border-radius: calc(var(--radius) + 8px);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.10);
       background:
-        linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+        radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,.18), transparent 55%),
+        radial-gradient(900px 500px at 90% 20%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(180deg, rgba(10,12,20,.75), rgba(10,12,20,.92)),
         url("./images/hero.jpg");
       background-size: cover;
       background-position: center;
-      border-radius: 12px;
-      margin: 1rem 0 2rem;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.2rem, 5vw, 4rem);
-      margin: 0 0 1rem;
-      line-height: 1.05;
-    }
-
-    .hero p {
-      font-size: clamp(1rem, 2.2vw, 1.5rem);
-      max-width: 60ch;
-      margin: 0 auto 1.8rem;
-      opacity: 0.95;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 0.85rem 1.2rem;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      border: 2px solid rgba(255,255,255,.75);
-      background: rgba(255,255,255,.12);
-      color: #fff;
-      min-width: 180px;
-    }
-
-    .btn.primary {
-      background: #fff;
-      color: #111;
-      border-color: #fff;
-    }
-
-    .content {
+      color: var(--text);
+      min-height: 70vh;
       display: grid;
-      gap: 2rem;
+      place-items: center;
     }
 
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.25rem 1.25rem;
-      border: 1px solid #e6e6e6;
+    /* if image missing, gradient still looks good */
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
+      pointer-events:none;
     }
 
-    .card h2 { margin-top: 0; }
-    .muted { color: #444; }
+    .hero-inner{
+      position: relative;
+      width: 100%;
+      padding: 3.25rem 1.25rem;
+    }
 
-    .nav {
-      display: flex;
+    .hero-grid{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 1.5rem;
+      align-items: center;
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px){
+      .hero-grid{ grid-template-columns: 1fr; }
+    }
+
+    .glass{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      padding: 1.4rem 1.4rem 1.2rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .kicker{
+      display:inline-flex;
+      gap:.5rem;
+      align-items:center;
+      padding:.35rem .7rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      font-weight: 700;
+      letter-spacing: .3px;
+      font-size: .85rem;
+      margin-bottom: .85rem;
+    }
+
+    .hero h1{
+      margin: 0 0 .8rem;
+      line-height: 1.02;
+      font-size: clamp(2.25rem, 5vw, 4rem);
+      letter-spacing: -0.5px;
+    }
+    .hero p{
+      margin: 0 0 1.2rem;
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      max-width: 62ch;
+    }
+
+    .btns{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      margin-top: .25rem;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.5rem;
+      padding: .9rem 1.1rem;
+      border-radius: 14px;
+      text-decoration:none;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      min-width: 210px;
+    }
+    .btn.primary{
+      background: var(--accent);
+      color: var(--accentText);
+      border-color: rgba(255,255,255,.65);
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0px); }
+
+    /* Side stat card */
+    .stat{
+      display:grid;
+      gap:.75rem;
+    }
+    .stat .tile{
+      background: var(--panel-strong);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .tile strong{ display:block; font-size: 1.15rem; }
+    .tile span{ color: var(--muted); }
+
+    /* Main sections */
+    .section{
+      margin: 1.6rem 0;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
       gap: 1rem;
-      flex-wrap: wrap;
-      margin: 1rem 0;
+    }
+    .card{
+      grid-column: span 6;
+      background:#fff;
+      border:1px solid #e8e8e8;
+      border-radius: var(--radius);
+      padding: 1.15rem;
+      box-shadow: 0 10px 22px rgba(0,0,0,.05);
+    }
+    .card h2{
+      margin: 0 0 .65rem;
+      font-size: 1.25rem;
+      letter-spacing: -.2px;
+    }
+    .card p{
+      margin: 0 0 .75rem;
+      color: #333;
+      line-height: 1.55;
+    }
+    .card ul{ margin: .4rem 0 0 1.2rem; }
+    .card li{ margin: .35rem 0; }
+
+    @media (max-width: 900px){
+      .card{ grid-column: span 12; }
+    }
+
+    .pillrow{
+      display:flex;
+      gap:.5rem;
+      flex-wrap:wrap;
+      margin-top:.65rem;
+    }
+    .pill{
+      padding:.35rem .65rem;
+      border-radius: 999px;
+      background:#f4f4f4;
+      border:1px solid #e7e7e7;
+      font-weight:700;
+      font-size:.85rem;
+    }
+
+    .links{
+      display:flex;
+      gap:.75rem;
+      flex-wrap:wrap;
+      margin-top:.75rem;
+    }
+    .links a{
+      font-weight:800;
+      text-decoration:none;
+    }
+
+    footer{
+      margin: 2rem 0 1rem;
+      text-align:center;
+      color:#666;
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <nav class="nav" aria-label="Site navigation">
-      <a href="../index.html">Home</a>
-      <a href="../teams/index.html">Teams</a>
-      <a href="./index.html">Proposals</a>
-    </nav>
-  </header>
+  <div class="wrap">
 
-  <main>
-    <!-- HERO (matches your screenshot vibe) -->
-    <section class="hero" aria-label="The Four Loop hero">
-      <div>
-        <h1>Your Personal Style<br />Curator</h1>
-        <p>
-          Discover fashion tailored to you. Expert guidance, curated collections,
-          and personalised shopping experiences.
-        </p>
-        <div class="hero-actions">
-          <a class="btn primary" href="../teams/the-four-loop/index.html">View Team Docs</a>
-          <a class="btn" href="../teams/the-four-loop/ui.html">UI Preview</a>
+    <header class="topbar">
+      <strong>The Four Loop — Proposal</strong>
+      <nav class="nav" aria-label="Site navigation">
+        <a href="../index.html">Home</a>
+        <a href="../teams/index.html">Teams</a>
+        <a href="./index.html">Proposals</a>
+      </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" aria-label="SourceFlow personal shopping request system hero">
+      <div class="hero-inner">
+        <div class="hero-grid">
+
+          <div class="glass">
+            <div class="kicker">SourceFlow • Personal Shopping Request System</div>
+
+            <h1>Personal Shopping<br />Request System</h1>
+
+            <p>
+              A web-based platform where customers submit sourcing requests,
+              track progress, and receive concierge updates — making personalised shopping
+              structured, traceable, and easy to manage.
+            </p>
+
+            <div class="btns">
+              <a class="btn primary" href="../teams/the-four-loop/index.html">View Team Documentation</a>
+              <a class="btn" href="../teams/the-four-loop/ui.html">View UI & Accessibility</a>
+            </div>
+
+            <div class="pillrow" aria-label="Key tags">
+              <span class="pill">Request tracking</span>
+              <span class="pill">Concierge workflow</span>
+              <span class="pill">CRUD screens</span>
+              <span class="pill">SQLite schema</span>
+            </div>
+          </div>
+
+          <aside class="stat" aria-label="Quick highlights">
+            <div class="tile">
+              <strong>Problem</strong>
+              <span>Personal shopping requests are often managed in DMs/spreadsheets with no consistent tracking.</span>
+            </div>
+            <div class="tile">
+              <strong>Solution</strong>
+              <span>Centralised requests + statuses + notes, mapped cleanly to CRUD actions and routes.</span>
+            </div>
+            <div class="tile">
+              <strong>Outcome</strong>
+              <span>Customers see progress; concierge updates faster; requests don’t get lost.</span>
+            </div>
+          </aside>
+
         </div>
       </div>
     </section>
 
-    <section class="content" aria-label="Proposal content">
-      <article class="card">
-        <h2>Brief introduction</h2>
-        <p class="muted">
-          Our application is called <strong>SourceFlow</strong>, created by the team
-          <strong>The Four Loop</strong>.
-        </p>
-        <p>
-          SourceFlow is a web-based personal shopping request manager. Customers submit sourcing requests,
-          track progress, and update their details. The concierge team reviews requests, updates statuses,
-          and adds notes.
-        </p>
-      </article>
+    <!-- CONTENT -->
+    <section class="section">
+      <div class="grid">
 
-      <article class="card">
-        <h2>Users: who they are and what they can do</h2>
-        <ul>
-          <li><strong>Customer</strong>: create a profile (sizes/brands/budget), submit a request, view status updates.</li>
-          <li><strong>Concierge (admin)</strong>: view requests, change status, add notes, and manage progress.</li>
-        </ul>
-        <p class="muted">
-          Why: It reduces time spent searching across sites and gives users a structured “concierge-style” flow.
-        </p>
-      </article>
+        <article class="card">
+          <h2>What we are building</h2>
+          <p>
+            <strong>SourceFlow</strong> is a request manager for personal shopping.
+            Customers submit a request (item, size, budget, preferences), then track updates as the concierge team sources items,
+            changes the status, and leaves notes.
+          </p>
+          <div class="links">
+            <a href="../teams/the-four-loop/routes.html">Routes →</a>
+            <a href="../teams/the-four-loop/db.html">Database →</a>
+          </div>
+        </article>
 
-      <article class="card">
-        <h2>Database structure (diagram + summary)</h2>
-        <p>
-          We will use a simple relational schema to support CRUD:
-          customers, requests, statuses, and request_notes.
-        </p>
+        <article class="card">
+          <h2>Users and roles</h2>
+          <ul>
+            <li><strong>Customer</strong> — create requests, edit details, view tracking/status.</li>
+            <li><strong>Concierge/Admin</strong> — review requests, update statuses, add internal notes.</li>
+          </ul>
+          <p style="margin-top:.75rem;">
+            Later iterations can add authentication and permission-based access.
+          </p>
+        </article>
 
-        <p><strong>See:</strong> <a href="../teams/the-four-loop/db.html">Database documentation</a></p>
+        <article class="card">
+          <h2>Core features</h2>
+          <ul>
+            <li>Create a shopping request with key details (item, size, budget, deadline).</li>
+            <li>Status tracking (e.g., New → In Progress → Sourced → Completed).</li>
+            <li>Concierge notes for internal updates and customer communication.</li>
+            <li>Simple admin management screens mapped to CRUD actions.</li>
+          </ul>
+        </article>
 
-        <!-- Optional: add your diagram image later -->
-        <!-- <figure>
-          <img src="../teams/the-four-loop/images/db-diagram.png" alt="ER diagram for SourceFlow database" />
-          <figcaption>Planned database relationships.</figcaption>
-        </figure> -->
-      </article>
+        <article class="card">
+          <h2>How it works (high level)</h2>
+          <ul>
+            <li>Customer submits a request.</li>
+            <li>Request is stored in the database with a default status.</li>
+            <li>Concierge updates status and adds notes during sourcing.</li>
+            <li>Customer views request progress at any time.</li>
+          </ul>
+          <div class="links">
+            <a href="../teams/the-four-loop/architecture.html">Architecture →</a>
+          </div>
+        </article>
 
-      <article class="card">
-        <h2>User interface concept sketches / prototype</h2>
-        <p>
-          We will build a clean, accessible UI with semantic HTML and forms mapped directly to CRUD actions.
-        </p>
-        <p><strong>See:</strong> <a href="../teams/the-four-loop/ui.html">UI & Accessibility documentation</a></p>
-      </article>
+        <article class="card" style="grid-column: span 12;">
+          <h2>Links for marker / presentation</h2>
+          <p>Use these during the demo so everything is clickable:</p>
+          <ul>
+            <li><a href="../teams/the-four-loop/index.html">Team Home (Documentation Hub)</a></li>
+            <li><a href="../teams/the-four-loop/ui.html">UI & Accessibility Documentation</a></li>
+            <li><a href="../teams/the-four-loop/db.html">Database Documentation</a></li>
+            <li><a href="../teams/the-four-loop/routes.html">Routes Documentation</a></li>
+            <li><a href="../teams/the-four-loop/architecture.html">Architecture Documentation</a></li>
+          </ul>
+        </article>
 
-      <article class="card">
-        <h2>Technical map (routes)</h2>
-        <p>
-          Routes will follow a clear REST-like pattern for requests and admin updates.
-        </p>
-        <p><strong>See:</strong> <a href="../teams/the-four-loop/routes.html">Routes documentation</a></p>
-      </article>
-
-      <article class="card">
-        <h2>Forms + SQL queries</h2>
-        <p>
-          Key forms include: create request, edit request, update status, add concierge note.
-          Each form will correspond to INSERT/UPDATE queries.
-        </p>
-        <p><strong>See:</strong> <a href="../teams/the-four-loop/db.html#sql">SQL query examples</a> (or add an id="sql" section on db.html)</p>
-      </article>
-
-      <article class="card">
-        <h2>Implemented by…</h2>
-        <ul>
-          <li><strong>The Four Loop</strong> – <a href="../teams/the-four-loop/index.html">Team documentation</a></li>
-        </ul>
-      </article>
+      </div>
     </section>
-  </main>
 
-  <footer style="margin-top:2rem;">
-    <a href="./index.html">Back to proposals</a>
-  </footer>
+    <footer>
+      <p><a href="./index.html">Back to proposals</a></p>
+    </footer>
+
+  </div>
 </body>
 </html>
