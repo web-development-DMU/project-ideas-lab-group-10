@@ -5,13 +5,13 @@ body {
 h2{
     font-display: center;
 }
-.pic1{
-    max-height: 300px;
-}
-.pic2{
+.pic{
     max-height: 300px;
 }
 .database{
+    max-height: 300px;
+}
+.figma{
     max-height: 300px;
 }
 .info{
