@@ -1,35 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Four Loop - SourceFlow</title>
-  <link rel="stylesheet" href="../style-example.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Four Loop – Proposal</title>
+
+  <!-- Reuse the module styling if your repo has it -->
+  <link rel="stylesheet" href="../style-example.css" />
+
+  <style>
+    /* Proposal-specific styling */
+    .hero {
+      min-height: 70vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 4rem 1.5rem;
+      color: #fff;
+      background:
+        linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+        url("./images/hero.jpg");
+      background-size: cover;
+      background-position: center;
+      border-radius: 12px;
+      margin: 1rem 0 2rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      margin: 0 0 1rem;
+      line-height: 1.05;
+    }
+
+    .hero p {
+      font-size: clamp(1rem, 2.2vw, 1.5rem);
+      max-width: 60ch;
+      margin: 0 auto 1.8rem;
+      opacity: 0.95;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.85rem 1.2rem;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 2px solid rgba(255,255,255,.75);
+      background: rgba(255,255,255,.12);
+      color: #fff;
+      min-width: 180px;
+    }
+
+    .btn.primary {
+      background: #fff;
+      color: #111;
+      border-color: #fff;
+    }
+
+    .content {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem 1.25rem;
+      border: 1px solid #e6e6e6;
+    }
+
+    .card h2 { margin-top: 0; }
+    .muted { color: #444; }
+
+    .nav {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+  </style>
 </head>
 
 <body>
+  <header>
+    <nav class="nav" aria-label="Site navigation">
+      <a href="../index.html">Home</a>
+      <a href="../teams/index.html">Teams</a>
+      <a href="./index.html">Proposals</a>
+    </nav>
+  </header>
 
-  <h1>SourceFlow – Personal Shopping Request System</h1>
+  <main>
+    <!-- HERO (matches your screenshot vibe) -->
+    <section class="hero" aria-label="The Four Loop hero">
+      <div>
+        <h1>Your Personal Style<br />Curator</h1>
+        <p>
+          Discover fashion tailored to you. Expert guidance, curated collections,
+          and personalised shopping experiences.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="../teams/the-four-loop/index.html">View Team Docs</a>
+          <a class="btn" href="../teams/the-four-loop/ui.html">UI Preview</a>
+        </div>
+      </div>
+    </section>
 
-  <section>
-    <h2>About the Application</h2>
-    <p>
-      SourceFlow is a web-based personal shopping request system.
-      Users can submit sourcing requests, track progress, and update their details.
-      The concierge team can manage requests and update statuses.
-    </p>
-  </section>
+    <section class="content" aria-label="Proposal content">
+      <article class="card">
+        <h2>Brief introduction</h2>
+        <p class="muted">
+          Our application is called <strong>SourceFlow</strong>, created by the team
+          <strong>The Four Loop</strong>.
+        </p>
+        <p>
+          SourceFlow is a web-based personal shopping request manager. Customers submit sourcing requests,
+          track progress, and update their details. The concierge team reviews requests, updates statuses,
+          and adds notes.
+        </p>
+      </article>
 
-  <section>
-    <h2>Services Offered</h2>
-    <ul>
-      <li>Private 1 on 1 consultation to understand needs</li>
-      <li>Quick sourcing of garments</li>
-      <li>Extra services such as gift wrapping</li>
-      <li>Price matching where applicable</li>
-    </ul>
-  </section>
+      <article class="card">
+        <h2>Users: who they are and what they can do</h2>
+        <ul>
+          <li><strong>Customer</strong>: create a profile (sizes/brands/budget), submit a request, view status updates.</li>
+          <li><strong>Concierge (admin)</strong>: view requests, change status, add notes, and manage progress.</li>
+        </ul>
+        <p class="muted">
+          Why: It reduces time spent searching across sites and gives users a structured “concierge-style” flow.
+        </p>
+      </article>
 
+      <article class="card">
+        <h2>Database structure (diagram + summary)</h2>
+        <p>
+          We will use a simple relational schema to support CRUD:
+          customers, requests, statuses, and request_notes.
+        </p>
+
+        <p><strong>See:</strong> <a href="../teams/the-four-loop/db.html">Database documentation</a></p>
+
+        <!-- Optional: add your diagram image later -->
+        <!-- <figure>
+          <img src="../teams/the-four-loop/images/db-diagram.png" alt="ER diagram for SourceFlow database" />
+          <figcaption>Planned database relationships.</figcaption>
+        </figure> -->
+      </article>
+
+      <article class="card">
+        <h2>User interface concept sketches / prototype</h2>
+        <p>
+          We will build a clean, accessible UI with semantic HTML and forms mapped directly to CRUD actions.
+        </p>
+        <p><strong>See:</strong> <a href="../teams/the-four-loop/ui.html">UI & Accessibility documentation</a></p>
+      </article>
+
+      <article class="card">
+        <h2>Technical map (routes)</h2>
+        <p>
+          Routes will follow a clear REST-like pattern for requests and admin updates.
+        </p>
+        <p><strong>See:</strong> <a href="../teams/the-four-loop/routes.html">Routes documentation</a></p>
+      </article>
+
+      <article class="card">
+        <h2>Forms + SQL queries</h2>
+        <p>
+          Key forms include: create request, edit request, update status, add concierge note.
+          Each form will correspond to INSERT/UPDATE queries.
+        </p>
+        <p><strong>See:</strong> <a href="../teams/the-four-loop/db.html#sql">SQL query examples</a> (or add an id="sql" section on db.html)</p>
+      </article>
+
+      <article class="card">
+        <h2>Implemented by…</h2>
+        <ul>
+          <li><strong>The Four Loop</strong> – <a href="../teams/the-four-loop/index.html">Team documentation</a></li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <footer style="margin-top:2rem;">
+    <a href="./index.html">Back to proposals</a>
+  </footer>
 </body>
 </html>
-T
