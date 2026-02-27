@@ -1,11 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>David & Hamza Team | CMS Proposal</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+}
+
+header {
+    background: linear-gradient(135deg, #141e30, #243b55);
+    color: white;
+    text-align: center;
+    padding: 60px 20px;
+}
+
+header h1 {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+section {
+    padding: 50px 10%;
+    background: white;
+    margin: 30px auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+h2 {
+    color: #243b55;
+    margin-bottom: 20px;
+}
+
+.team-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.card {
+    background: #f9fafc;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #141e30;
+}
+
+ul {
+    line-height: 1.8;
+}
+
+.progress {
+    background: #e8edf3;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    background: #141e30;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 28px;
+    }
+}
+</style>
 </head>
 <body>
-    
+
+<header>
+    <h1>👥 David & Hamza Team</h1>
+    <p>Contact Management System (CMS) Project Proposal</p>
+</header>
+
+<section>
+    <h2>📌 Proposed Application Name</h2>
+    <p><strong>Contact Management System (CMS)</strong></p>
+
+    <h2>📖 Brief Overview</h2>
+    <p>
+        The Contact Management System (CMS) is a web-based application designed to help businesses 
+        and individuals securely manage and organize their contacts. 
+        It allows users to store, update, search, and manage contact information such as 
+        names, phone numbers, emails, company details, and notes.
+    </p>
+    <p>
+        The goal is to replace manual record-keeping methods with a centralized digital platform 
+        that improves organization, accessibility, and productivity.
+    </p>
+</section>
+
+<section>
+    <h2>👤 Team Members</h2>
+    <div class="team-container">
+        <div class="card">
+            <h3>Hamza</h3>
+            <p>
+                Hamza is responsible for backend development including authentication, 
+                database integration, and core system logic.
+            </p>
+            <ul>
+                <li>Secure login system</li>
+                <li>Database connection</li>
+                <li>Role-based access control</li>
+                <li>Backend structure & security</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>David</h3>
+            <p>
+                David is responsible for frontend design and user experience, ensuring 
+                the application is clean, responsive, and user-friendly.
+            </p>
+            <ul>
+                <li>User interface design</li>
+                <li>Dashboard layout</li>
+                <li>Responsive design</li>
+                <li>Improving usability</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>👥 System Users</h2>
+    <ul>
+        <li><strong>Administrator</strong></li>
+        <li><strong>Standard Users (Employees / Sales Staff)</strong></li>
+    </ul>
+</section>
+
+<section>
+    <h2>🔐 User Roles</h2>
+    <ul>
+        <li><strong>Administrator:</strong> Manage users, assign roles, view all contacts, monitor system activity.</li>
+        <li><strong>Standard User:</strong> Add, edit, delete, search, and manage their own contacts securely.</li>
+    </ul>
+</section>
+
+<section>
+    <h2>📊 Data Involved</h2>
+    <ul>
+        <li>Contact Name</li>
+        <li>Phone Number</li>
+        <li>Email Address</li>
+        <li>Company Name</li>
+        <li>Address</li>
+        <li>Notes / Description</li>
+        <li>User Role</li>
+        <li>Login Credentials (Email & Password)</li>
+    </ul>
+</section>
+
+<section>
+    <h2>🖥️ Suggested User Interface Components</h2>
+    <ul>
+        <li>Login Page</li>
+        <li>Dashboard</li>
+        <li>Add Contact Form</li>
+        <li>Contact List Table</li>
+        <li>Search Bar</li>
+        <li>Edit & Delete Buttons</li>
+        <li>User Management Panel (Admin Only)</li>
+        <li>Logout Option</li>
+    </ul>
+</section>
+
+<section>
+    <h2>🎯 Project Objectives</h2>
+    <ul>
+        <li>Build a secure authentication system</li>
+        <li>Implement role-based access control</li>
+        <li>Develop full CRUD functionality</li>
+        <li>Create a responsive UI</li>
+        <li>Connect system to database</li>
+    </ul>
+</section>
+
+<section>
+    <h2>🛠️ Current Progress</h2>
+    <div class="progress">✔ Project idea finalized</div>
+    <div class="progress">✔ Proposal completed</div>
+    <div class="progress">✔ Basic authentication implemented</div>
+    <div class="progress">✔ Admin dashboard structure created</div>
+    <div class="progress">⏳ Planning database structure</div>
+</section>
+
+<section>
+    <h2>🚀 Team Vision</h2>
+    <p>
+        Our aim is to build a scalable, secure, and practical real-world application 
+        that demonstrates both frontend and backend development skills.
+    </p>
+    <p>
+        We are open to expanding the project with additional features such as 
+        CSV import/export, contact categorization, activity tracking, and mobile optimization.
+    </p>
+</section>
+
+<section>
+    <h2>🏆 Why This Project Is a Good Choice</h2>
+    <ul>
+        <li>Practical real-world application</li>
+        <li>Demonstrates full-stack development</li>
+        <li>Includes authentication & authorization</li>
+        <li>Uses database integration</li>
+        <li>Scalable for future enhancements</li>
+    </ul>
+</section>
+
+<footer>
+    © 2026 David & Hamza Team | Contact Management System
+</footer>
+
 </body>
 </html>
