@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SourceFlow — Requests</title>
+
+  <link rel="stylesheet" href="../style-example.css" />
+  <link rel="stylesheet" href="./team.css" />
+
+  <style>
+    .page-title { display:flex; align-items:baseline; justify-content:space-between; gap: 12px; flex-wrap:wrap; }
+    .muted { opacity: 0.85; }
+    .toolbar { display:flex; gap: 10px; flex-wrap:wrap; align-items:center; margin: 14px 0 18px; }
+    .toolbar input { max-width: 320px; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); background: rgba(0,0,0,0.15); color: inherit; }
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding: 10px 14px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.10);
+      color: inherit; text-decoration:none; font-weight: 700;
+    }
+    .btn:hover { background: rgba(255,255,255,0.14); }
+    .btn.primary { background:#fff; color:#0b0f19; border-color: rgba(255,255,255,0.9); }
+    .btn.primary:hover { filter: brightness(0.95); }
+
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.12); vertical-align: top; }
+    th { text-align:left; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85; }
+    td { font-size: 14px; }
+    .pill {
+      display:inline-flex; align-items:center; gap: 6px;
+      padding: 6px 10px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.18);
+      font-weight: 700; font-size: 12px;
+    }
+    .row-actions { display:flex; gap: 8px; flex-wrap:wrap; }
+    .small { padding: 8px 10px; border-radius: 10px; font-size: 13px; }
+    .empty {
+      padding: 16px; border: 1px dashed rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px; margin-top: 14px;
+    }
+    .error {
+      padding: 12px 14px; border-radius: 12px;
+      border: 1px solid rgba(255, 100, 100, 0.35);
+      background: rgba(255, 100, 100, 0.10);
+      margin: 14px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <nav aria-label="Team navigation">
+      <a href="./index.html">Team Home</a>
+      <a href="./ui.html">UI</a>
+      <a href="./db.html">Database</a>
+      <a href="./routes.html">Routes</a>
+      <a href="./architecture.html">Architecture</a>
+      <a href="./requests.html" aria-current="page">Requests</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="page-title">
+      <h1>Requests</h1>
+      <p class="muted">Live data from <code>/api/requests</code></p>
+    </div>
+
+    <div class="toolbar" aria-label="Requests toolbar">
+      <a class="btn primary" href="./newRequest.html">+ New Request</a>
+      <button class="btn" id="refreshBtn" type="button">Refresh</button>
+      <input id="search" type="search" placeholder="Search item / brand / customer…" aria-label="Search requests" />
+    </div>
+
+    <div id="msg"></div>
+
+    <div class="panel" aria-label="Requests list">
+      <table aria-label="Requests table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Item</th>
+            <th>Brand</th>
+            <th>Budget</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <!-- filled by JS -->
+        </tbody>
+      </table>
+
+      <div id="empty" class="empty" hidden>
+        No requests yet. Click <strong>New Request</strong> to create one.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const rowsEl = document.getElementById("rows");
+    const emptyEl = document.getElementById("empty");
+    const msgEl = document.getElementById("msg");
+    const searchEl = document.getElementById("search");
+    const refreshBtn = document.getElementById("refreshBtn");
+
+    let all = [];
+
+    function fmtMoney(n) {
+      if (n === null || n === undefined || n === "") return "—";
+      const num = Number(n);
+      if (Number.isNaN(num)) return String(n);
+      return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(num);
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return "—";
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return String(iso);
+      return d.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function setError(text) {
+      msgEl.innerHTML = `<div class="error"><strong>Problem:</strong> ${text}</div>`;
+    }
+
+    function clearMsg() { msgEl.innerHTML = ""; }
+
+    function render(list) {
+      rowsEl.innerHTML = "";
+
+      if (!list || list.length === 0) {
+        emptyEl.hidden = false;
+        return;
+      }
+      emptyEl.hidden = true;
+
+      for (const r of list) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><code>${r.request_id ?? r.id ?? "—"}</code></td>
+          <td>${escapeHtml(r.item_name ?? r.item ?? "—")}</td>
+          <td>${escapeHtml(r.brand ?? "—")}</td>
+          <td>${fmtMoney(r.budget_gbp ?? r.budget)}</td>
+          <td><span class="pill">${escapeHtml(r.status_name ?? r.status ?? "New")}</span></td>
+          <td>${fmtDate(r.created_at ?? r.createdAt)}</td>
+          <td>
+            <div class="row-actions">
+              <a class="btn small" href="./requestDetail.html?id=${encodeURIComponent(r.request_id ?? r.id)}">View</a>
+              <button class="btn small" data-action="status" data-id="${escapeAttr(r.request_id ?? r.id)}">Next status</button>
+              <button class="btn small" data-action="delete" data-id="${escapeAttr(r.request_id ?? r.id)}">Delete</button>
+            </div>
+          </td>
+        `;
+        rowsEl.appendChild(tr);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    }
+    function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
+
+    function applySearch() {
+      const q = searchEl.value.trim().toLowerCase();
+      if (!q) return render(all);
+      const filtered = all.filter(r => {
+        const item = (r.item_name ?? r.item ?? "").toLowerCase();
+        const brand = (r.brand ?? "").toLowerCase();
+        const name = (r.full_name ?? r.customer_name ?? "").toLowerCase();
+        return item.includes(q) || brand.includes(q) || name.includes(q);
+      });
+      render(filtered);
+    }
+
+    async function load() {
+      clearMsg();
+      try {
+        const res = await fetch("/api/requests");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        all = await res.json();
+        applySearch();
+      } catch (e) {
+        setError(`Could not load requests. ${e?.message ?? e}`);
+        all = [];
+        render([]);
+      }
+    }
+
+    // Basic “next status” cycling (demo-friendly).
+    const STATUS_ORDER = ["New", "In Progress", "Sourced", "Completed"];
+
+    async function nextStatus(id) {
+      const row = all.find(x => String(x.request_id ?? x.id) === String(id));
+      const current = row?.status_name ?? row?.status ?? "New";
+      const idx = Math.max(0, STATUS_ORDER.indexOf(current));
+      const next = STATUS_ORDER[(idx + 1) % STATUS_ORDER.length];
+
+      try {
+        const res = await fetch(`/api/requests/${encodeURIComponent(id)}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status_name: next })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        await load();
+      } catch (e) {
+        setError(`Could not update status for ${id}. ${e?.message ?? e}`);
+      }
+    }
+
+    async function deleteRequest(id) {
+      if (!confirm("Delete this request?")) return;
+      try {
+        const res = await fetch(`/api/requests/${encodeURIComponent(id)}`, { method: "DELETE" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        await load();
+      } catch (e) {
+        setError(`Could not delete ${id}. ${e?.message ?? e}`);
+      }
+    }
+
+    rowsEl.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === "status") nextStatus(id);
+      if (action === "delete") deleteRequest(id);
+    });
+
+    searchEl.addEventListener("input", applySearch);
+    refreshBtn.addEventListener("click", load);
+
+    load();
+  </script>
+</body>
+</html>
