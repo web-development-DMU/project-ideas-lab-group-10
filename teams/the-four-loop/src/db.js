@@ -1,70 +1,68 @@
-import Database from "better-sqlite3";
-import fs from "fs";
-import path from "path";
+import { join, fromFileUrl } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { ensureDir } from "https://deno.land/std@0.224.0/fs/ensure_dir.ts";
+import { DB } from "https://deno.land/x/sqlite@v3.9.1/mod.ts";
 
-export const db = new Database("./sourceflow.sqlite");
+function nowISO() {
+  return new Date().toISOString();
+}
 
-export function initDb() {
-  const schema = `
+export async function openDb() {
+  // ROOT = folder where server.js lives (teams/the-four-loop/)
+  const ROOT = fromFileUrl(new URL("../", import.meta.url));
+  const DATA_DIR = join(ROOT, "data");
+  await ensureDir(DATA_DIR);
+
+  const DB_PATH = join(DATA_DIR, "sourceflow.db");
+
+  // Opening SQLite creates the file if it doesn't exist
+  const db = new DB(DB_PATH);
+
+  // Tables
+  db.execute(`
     PRAGMA foreign_keys = ON;
 
     CREATE TABLE IF NOT EXISTS customers (
       customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-      full_name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT,
-      created_at TEXT NOT NULL
+      full_name   TEXT NOT NULL,
+      email       TEXT,
+      phone       TEXT,
+      created_at  TEXT NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS statuses (
-      status_id INTEGER PRIMARY KEY,
+      status_id   INTEGER PRIMARY KEY AUTOINCREMENT,
       status_name TEXT NOT NULL UNIQUE
     );
 
     CREATE TABLE IF NOT EXISTS requests (
-      request_id INTEGER PRIMARY KEY AUTOINCREMENT,
-      customer_id INTEGER NOT NULL,
-      status_id INTEGER NOT NULL,
-      item_name TEXT NOT NULL,
-      brand TEXT,
-      budget_gbp REAL,
-      size TEXT,
-      colour TEXT,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
-      FOREIGN KEY (status_id) REFERENCES statuses(status_id)
+      request_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id  INTEGER,
+      status_id    INTEGER NOT NULL,
+      item_name    TEXT NOT NULL,
+      brand        TEXT,
+      budget_gbp   REAL,
+      size         TEXT,
+      colour       TEXT,
+      created_at   TEXT NOT NULL,
+      updated_at   TEXT NOT NULL,
+      FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE SET NULL,
+      FOREIGN KEY (status_id)   REFERENCES statuses(status_id)
     );
 
     CREATE TABLE IF NOT EXISTS request_notes (
-      note_id INTEGER PRIMARY KEY AUTOINCREMENT,
-      request_id INTEGER NOT NULL,
-      note_text TEXT NOT NULL,
-      created_at TEXT NOT NULL,
+      note_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+      request_id  INTEGER NOT NULL,
+      note_text   TEXT NOT NULL,
+      created_at  TEXT NOT NULL,
       FOREIGN KEY (request_id) REFERENCES requests(request_id) ON DELETE CASCADE
     );
-  `;
+  `);
 
-  db.exec(schema);
-}
-
-export function seedDb() {
-  // statuses
-  const countStatuses = db.prepare(`SELECT COUNT(*) AS n FROM statuses`).get().n;
-  if (countStatuses === 0) {
-    const ins = db.prepare(`INSERT INTO statuses (status_id, status_name) VALUES (?, ?)`);
-    ins.run(1, "New");
-    ins.run(2, "In Progress");
-    ins.run(3, "Sourced");
-    ins.run(4, "Completed");
+  // Seed statuses (idempotent)
+  const defaultStatuses = ["New", "In Progress", "Sourced", "Completed"];
+  for (const s of defaultStatuses) {
+    db.query("INSERT OR IGNORE INTO statuses (status_name) VALUES (?);", [s]);
   }
 
-  // demo customer
-  const countCustomers = db.prepare(`SELECT COUNT(*) AS n FROM customers`).get().n;
-  if (countCustomers === 0) {
-    db.prepare(`
-      INSERT INTO customers (full_name, email, phone, created_at)
-      VALUES (?, ?, ?, datetime('now'))
-    `).run("Demo Customer", "demo@sourceflow.local", "0000000000");
-  }
+  return { db, DB_PATH, nowISO };
 }
