@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SourceFlow — Admin</title>
+
+  <link rel="stylesheet" href="../style-example.css" />
+  <link rel="stylesheet" href="./team.css" />
+
+  <style>
+    .container { max-width: 1100px; margin: 0 auto; padding: 22px 16px 70px; }
+    .panel { border: 1px solid rgba(255,255,255,0.16); border-radius: 18px; background: rgba(255,255,255,0.06); padding: 16px; }
+    table { width:100%; border-collapse: collapse; overflow:hidden; border-radius: 14px; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.12); font-size: 14px; vertical-align: top; }
+    th { text-align:left; opacity: 0.9; }
+    select, input, button {
+      padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.25); color: white;
+    }
+    button { cursor:pointer; font-weight: 800; background: rgba(255,255,255,0.10); }
+    button:hover { background: rgba(255,255,255,0.14); }
+    .muted { opacity: 0.75; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="Team navigation">
+      <a href="../index.html">← Back to Teams</a>
+      <a href="./index.html">Team Home</a>
+      <a href="./ui.html">UI</a>
+      <a href="./db.html">Database</a>
+      <a href="./routes.html">Routes</a>
+      <a href="./architecture.html">Architecture</a>
+      <a href="./requests.html">Requests</a>
+      <a href="./admin.html" aria-current="page">Admin</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Admin</h1>
+    <p class="muted">Admin view: see all requests, update status, add notes.</p>
+
+    <section class="panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+        <h2 style="margin:0">All requests</h2>
+        <button id="refresh">Refresh</button>
+      </div>
+
+      <p id="msg" class="muted"></p>
+
+      <div style="overflow:auto; margin-top: 10px;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Customer</th><th>Item</th><th>Status</th><th>Update</th><th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="6" class="muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API = (path) => `${location.origin}${path}`;
+    const setMsg = (t) => document.getElementById("msg").textContent = t;
+
+    async function apiGet(path){
+      const res = await fetch(API(path));
+      return await res.json();
+    }
+
+    async function apiPatch(path, data){
+      const res = await fetch(API(path), {
+        method: "PATCH",
+        headers: {"content-type":"application/json"},
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+
+    async function apiPost(path, data){
+      const res = await fetch(API(path), {
+        method: "POST",
+        headers: {"content-type":"application/json"},
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+    }
+
+    async function load(){
+      setMsg("Loading…");
+      const out = await apiGet("/api/requests");
+      const data = out.data ?? [];
+      const tbody = document.getElementById("rows");
+
+      if (!data.length){
+        tbody.innerHTML = `<tr><td colspan="6" class="muted">No requests found.</td></tr>`;
+        setMsg("");
+        return;
+      }
+
+      tbody.innerHTML = data.map(r => `
+        <tr>
+          <td>${r.request_id}</td>
+          <td>${escapeHtml(r.customer_name)}<br><span class="muted">${escapeHtml(r.customer_email ?? "")}</span></td>
+          <td>${escapeHtml(r.item_name)}<br><span class="muted">${escapeHtml(r.brand ?? "")}</span></td>
+          <td><strong>${escapeHtml(r.status_name)}</strong></td>
+          <td>
+            <select id="status_${r.request_id}">
+              ${["New","In Progress","Sourced","Completed"].map(s => `<option ${s===r.status_name ? "selected":""}>${s}</option>`).join("")}
+            </select>
+            <button onclick="updateStatus(${r.request_id})" style="margin-top:6px;">Save</button>
+          </td>
+          <td>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input id="note_${r.request_id}" placeholder="Add note…" />
+              <button onclick="addNote(${r.request_id})">Add</button>
+              <button onclick="viewNotes(${r.request_id})">View</button>
+            </div>
+            <div id="notes_${r.request_id}" class="muted" style="margin-top:8px;"></div>
+          </td>
+        </tr>
+      `).join("");
+
+      setMsg("");
+    }
+
+    window.updateStatus = async (id) => {
+      const status_name = document.getElementById(`status_${id}`).value;
+      const out = await apiPatch(`/api/requests/${id}/status`, { status_name });
+      if (!out.ok){ setMsg(`❌ ${out.error || "Failed to update status"}`); return; }
+      setMsg(`✅ Updated request #${id} to "${status_name}".`);
+      await load();
+    };
+
+    window.addNote = async (id) => {
+      const input = document.getElementById(`note_${id}`);
+      const note_text = input.value.trim();
+      if (!note_text) return;
+
+      const out = await apiPost(`/api/requests/${id}/notes`, { note_text });
+      if (!out.ok){ setMsg(`❌ ${out.error || "Failed to add note"}`); return; }
+
+      input.value = "";
+      setMsg(`✅ Added note to request #${id}.`);
+      await viewNotes(id);
+    };
+
+    window.viewNotes = async (id) => {
+      const out = await apiGet(`/api/requests/${id}/notes`);
+      const notes = out.data ?? [];
+      const box = document.getElementById(`notes_${id}`);
+      if (!notes.length){
+        box.textContent = "No notes yet.";
+        return;
+      }
+      box.innerHTML = notes.slice(0,3).map(n => `• ${escapeHtml(n.note_text)} <span class="muted">(${new Date(n.created_at).toLocaleString()})</span>`).join("<br>");
+    };
+
+    document.getElementById("refresh").addEventListener("click", load);
+    load();
+  </script>
+</body>
+</html>

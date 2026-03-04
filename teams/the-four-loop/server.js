@@ -1,34 +1,29 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { extname, join, dirname, fromFileUrl } from "https://deno.land/std@0.224.0/path/mod.ts";
-import { ensureDir } from "https://deno.land/std@0.224.0/fs/ensure_dir.ts";
+import { serve } from "@std/http";
+import { dirname, fromFileUrl, join, extname } from "@std/path";
 import {
-  openDb,
-  listRequests,
-  createRequest,
-  updateStatus,
   addNote,
-  deleteRequest,
+  createRequest,
+  dbPath,
+  getDb,
+  listNotes,
+  listRequests,
+  updateStatus,
 } from "./src/db.js";
 
-const __dirname = dirname(fromFileUrl(import.meta.url));
+const ROOT = dirname(fromFileUrl(import.meta.url)); // .../teams/the-four-loop
+const PROJECT_ROOT = join(ROOT, "..", ".."); // project root (so /teams/... works)
 
-// DB location: teams/the-four-loop/data/sourceflow.db
-const dataDir = join(__dirname, "data");
-await ensureDir(dataDir);
-const dbPath = join(dataDir, "sourceflow.db");
-
-const db = openDb(dbPath);
-console.log("✅ DB ready at:", dbPath);
+const PORT = 8000;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
+  ".js": "application/javascript; charset=utf-8",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".svg": "image/svg+xml",
-  ".ico": "image/x-icon",
+  ".json": "application/json; charset=utf-8",
 };
 
 function json(data, status = 200) {
@@ -38,79 +33,110 @@ function json(data, status = 200) {
   });
 }
 
-// Serve static files from the REPO ROOT so /teams/... works
+function bad(msg, status = 400) {
+  return json({ ok: false, error: msg }, status);
+}
+
+async function readBody(req) {
+  try {
+    return await req.json();
+  } catch {
+    return null;
+  }
+}
+
 async function serveStatic(urlPath) {
-  const repoRoot = join(__dirname, "..", "..");
-  const filePath = join(repoRoot, urlPath);
+  // Serve from project root, so /teams/the-four-loop/requests.html works
+  let filePath = join(PROJECT_ROOT, urlPath);
+
+  // If requesting folder, default index.html
+  if (urlPath.endsWith("/")) filePath = join(filePath, "index.html");
 
   try {
-    const file = await Deno.readFile(filePath);
+    const data = await Deno.readFile(filePath);
     const ext = extname(filePath).toLowerCase();
-    return new Response(file, {
+    return new Response(data, {
       status: 200,
       headers: { "content-type": MIME[ext] ?? "application/octet-stream" },
     });
   } catch {
-    return new Response("Not Found", { status: 404 });
+    return null;
   }
 }
+
+console.log("✅ DB ready at:", dbPath());
+getDb(); // ensure created
+console.log(`🚀 Listening on http://localhost:${PORT}`);
 
 serve(async (req) => {
   const url = new URL(req.url);
 
-  // Friendly redirects
+  // Nice default
   if (url.pathname === "/") {
-    return Response.redirect(`${url.origin}/teams/the-four-loop/index.html`, 302);
-  }
-  if (url.pathname === "/requests.html") {
-    return Response.redirect(`${url.origin}/teams/the-four-loop/requests.html`, 302);
+    return Response.redirect(`http://localhost:${PORT}/teams/the-four-loop/requests.html`, 302);
   }
 
+  // -----------------------
   // API
+  // -----------------------
   if (url.pathname === "/api/health") {
-    return json({ ok: true, db: dbPath });
+    return json({ ok: true, db: dbPath() });
   }
 
   if (url.pathname === "/api/requests" && req.method === "GET") {
-    return json({ ok: true, requests: listRequests(db) });
+    const customer_id = url.searchParams.get("customer_id");
+    const data = listRequests({ customer_id: customer_id ? Number(customer_id) : null });
+    return json({ ok: true, data });
   }
 
   if (url.pathname === "/api/requests" && req.method === "POST") {
-    const payload = await req.json();
-    if (!payload?.item_name || String(payload.item_name).trim().length < 2) {
-      return json({ ok: false, error: "item_name is required (min 2 chars)" }, 400);
+    const body = await readBody(req);
+    if (!body) return bad("Invalid JSON");
+
+    // required
+    if (!body.customer_name || !body.item_name) return bad("Missing customer_name or item_name");
+
+    const created = createRequest(body);
+    return json({ ok: true, created }, 201);
+  }
+
+  // PATCH /api/requests/:id/status
+  const statusMatch = url.pathname.match(/^\/api\/requests\/(\d+)\/status$/);
+  if (statusMatch && req.method === "PATCH") {
+    const request_id = Number(statusMatch[1]);
+    const body = await readBody(req);
+    if (!body?.status_name) return bad("Missing status_name");
+
+    try {
+      updateStatus({ request_id, status_name: body.status_name });
+      return json({ ok: true });
+    } catch (e) {
+      return bad(e.message, 400);
     }
-    const id = createRequest(db, payload);
-    return json({ ok: true, request_id: id }, 201);
   }
 
-  if (url.pathname === "/api/requests/status" && req.method === "POST") {
-    const { request_id, status_name } = await req.json();
-    if (!request_id || !status_name) {
-      return json({ ok: false, error: "request_id + status_name required" }, 400);
-    }
-    updateStatus(db, Number(request_id), String(status_name));
-    return json({ ok: true });
+  // GET /api/requests/:id/notes
+  const notesMatch = url.pathname.match(/^\/api\/requests\/(\d+)\/notes$/);
+  if (notesMatch && req.method === "GET") {
+    const request_id = Number(notesMatch[1]);
+    return json({ ok: true, data: listNotes({ request_id }) });
   }
 
-  if (url.pathname === "/api/requests/note" && req.method === "POST") {
-    const { request_id, note_text } = await req.json();
-    if (!request_id || !note_text) {
-      return json({ ok: false, error: "request_id + note_text required" }, 400);
-    }
-    addNote(db, Number(request_id), String(note_text));
-    return json({ ok: true });
+  // POST /api/requests/:id/notes
+  if (notesMatch && req.method === "POST") {
+    const request_id = Number(notesMatch[1]);
+    const body = await readBody(req);
+    if (!body?.note_text) return bad("Missing note_text");
+
+    addNote({ request_id, note_text: body.note_text });
+    return json({ ok: true }, 201);
   }
 
-  if (url.pathname === "/api/requests/delete" && req.method === "POST") {
-    const { request_id } = await req.json();
-    if (!request_id) return json({ ok: false, error: "request_id required" }, 400);
-    deleteRequest(db, Number(request_id));
-    return json({ ok: true });
-  }
-
+  // -----------------------
   // Static
-  return await serveStatic(url.pathname);
-}, { port: 8000 });
+  // -----------------------
+  const staticRes = await serveStatic(url.pathname);
+  if (staticRes) return staticRes;
 
-console.log("✅ Listening on http://localhost:8000");
+  return new Response("Not Found", { status: 404 });
+}, { port: PORT });

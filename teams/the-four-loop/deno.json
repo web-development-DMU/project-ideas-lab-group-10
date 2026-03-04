@@ -3,6 +3,7 @@
     "start": "deno run -A --watch server.js"
   },
   "imports": {
+<<<<<<< HEAD
     "@std/media-types": "jsr:@std/media-types@^1.0.0"
   }
 }{
@@ -11,5 +12,10 @@
   },
   "imports": {
     "@std/media-types": "jsr:@std/media-types@^1.0.0"
+=======
+    "@std/http": "https://deno.land/std@0.224.0/http/mod.ts",
+    "@std/path": "https://deno.land/std@0.224.0/path/mod.ts",
+    "sqlite": "https://deno.land/x/sqlite@v3.8/mod.ts"
+>>>>>>> c67e3b015a84de62dc2057e7f4d1d62c93de10a2
   }
 }
