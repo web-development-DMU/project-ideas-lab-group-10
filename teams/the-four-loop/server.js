@@ -1,142 +1,157 @@
-import { serve } from "@std/http";
-import { dirname, fromFileUrl, join, extname } from "@std/path";
-import {
-  addNote,
-  createRequest,
-  dbPath,
-  getDb,
-  listNotes,
-  listRequests,
-  updateStatus,
-} from "./src/db.js";
-
-const ROOT = dirname(fromFileUrl(import.meta.url)); // .../teams/the-four-loop
-const PROJECT_ROOT = join(ROOT, "..", ".."); // project root (so /teams/... works)
+// teams/the-four-loop/server.js
+import { getDb, getDbPath, getStatusIdByName } from "./src/db.js";
+import { extname } from "@std/path";
 
 const PORT = 8000;
+const ROOT = new URL(".", import.meta.url);
 
-const MIME = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".js": "application/javascript; charset=utf-8",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".svg": "image/svg+xml",
-  ".json": "application/json; charset=utf-8",
-};
+getDb();
+console.log("✅ DB ready at:", getDbPath());
+console.log(`🌐 Listening on http://localhost:${PORT}/`);
 
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data, null, 2), {
+Deno.serve({ port: PORT }, async (req) => {
+  const url = new URL(req.url);
+  const path = url.pathname;
+
+  if (path.startsWith("/api/")) return handleApi(req, url);
+  return serveStatic(path);
+});
+
+async function handleApi(req, url) {
+  const db = getDb();
+  const { pathname } = url;
+
+  // Health check (optional)
+  if (req.method === "GET" && pathname === "/api/health") {
+    return json({ ok: true, db: getDbPath() });
+  }
+
+  // GET all requests
+  if (req.method === "GET" && pathname === "/api/requests") {
+    const rows = db.prepare(`
+      SELECT
+        r.request_id,
+        r.item_name,
+        r.brand,
+        r.budget_gbp,
+        r.size,
+        r.colour,
+        s.status_name,
+        r.created_at
+      FROM requests r
+      JOIN statuses s ON s.status_id = r.status_id
+      ORDER BY r.request_id DESC;
+    `).all();
+
+    return json(rows);
+  }
+
+  // POST create request
+  if (req.method === "POST" && pathname === "/api/requests") {
+    const body = await safeJson(req);
+
+    const item_name = (body.item_name ?? "").trim();
+    if (!item_name) return json({ error: "item_name is required" }, 400);
+
+    const brand = (body.brand ?? "").trim() || null;
+    const budget_gbp =
+      body.budget_gbp === "" || body.budget_gbp == null ? null : Number(body.budget_gbp);
+    const size = (body.size ?? "").trim() || null;
+    const colour = (body.colour ?? "").trim() || null;
+
+    const now = new Date().toISOString();
+    const status_id = getStatusIdByName("New");
+
+    db.prepare(`
+      INSERT INTO requests (status_id, item_name, brand, budget_gbp, size, colour, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    `).run(status_id, item_name, brand, budget_gbp, size, colour, now, now);
+
+    const created = db.prepare(`
+      SELECT
+        r.request_id,
+        r.item_name,
+        r.brand,
+        r.budget_gbp,
+        r.size,
+        r.colour,
+        s.status_name,
+        r.created_at
+      FROM requests r
+      JOIN statuses s ON s.status_id = r.status_id
+      WHERE r.request_id = last_insert_rowid();
+    `).all()?.[0];
+
+    return json(created, 201);
+  }
+
+  // PATCH status (admin)
+  const m = pathname.match(/^\/api\/requests\/(\d+)\/status$/);
+  if (req.method === "PATCH" && m) {
+    const request_id = Number(m[1]);
+    const body = await safeJson(req);
+
+    const status_name = (body.status_name ?? "").trim();
+    if (!status_name) return json({ error: "status_name is required" }, 400);
+
+    const status_id = getStatusIdByName(status_name);
+    const now = new Date().toISOString();
+
+    db.prepare(`
+      UPDATE requests
+      SET status_id = ?, updated_at = ?
+      WHERE request_id = ?;
+    `).run(status_id, now, request_id);
+
+    return json({ ok: true });
+  }
+
+  return json({ error: "Not found" }, 404);
+}
+
+async function serveStatic(pathname) {
+  const rel = pathname === "/" ? "/index.html" : pathname;
+  if (rel.includes("..")) return new Response("Bad request", { status: 400 });
+
+  const fileUrl = new URL("." + rel, ROOT);
+
+  try {
+    const data = await Deno.readFile(fileUrl);
+    return new Response(data, {
+      headers: { "content-type": contentType(rel) },
+    });
+  } catch {
+    return new Response("Not Found", { status: 404 });
+  }
+}
+
+function contentType(path) {
+  const ext = extname(path).toLowerCase();
+  return (
+    {
+      ".html": "text/html; charset=utf-8",
+      ".css": "text/css; charset=utf-8",
+      ".js": "text/javascript; charset=utf-8",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".svg": "image/svg+xml",
+      ".webp": "image/webp"
+    }[ext] || "application/octet-stream"
+  );
+}
+
+function json(obj, status = 200) {
+  return new Response(JSON.stringify(obj), {
     status,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 }
 
-function bad(msg, status = 400) {
-  return json({ ok: false, error: msg }, status);
-}
-
-async function readBody(req) {
+async function safeJson(req) {
   try {
     return await req.json();
   } catch {
-    return null;
+    return {};
   }
 }
-
-async function serveStatic(urlPath) {
-  // Serve from project root, so /teams/the-four-loop/requests.html works
-  let filePath = join(PROJECT_ROOT, urlPath);
-
-  // If requesting folder, default index.html
-  if (urlPath.endsWith("/")) filePath = join(filePath, "index.html");
-
-  try {
-    const data = await Deno.readFile(filePath);
-    const ext = extname(filePath).toLowerCase();
-    return new Response(data, {
-      status: 200,
-      headers: { "content-type": MIME[ext] ?? "application/octet-stream" },
-    });
-  } catch {
-    return null;
-  }
-}
-
-console.log("✅ DB ready at:", dbPath());
-getDb(); // ensure created
-console.log(`🚀 Listening on http://localhost:${PORT}`);
-
-serve(async (req) => {
-  const url = new URL(req.url);
-
-  // Nice default
-  if (url.pathname === "/") {
-    return Response.redirect(`http://localhost:${PORT}/teams/the-four-loop/requests.html`, 302);
-  }
-
-  // -----------------------
-  // API
-  // -----------------------
-  if (url.pathname === "/api/health") {
-    return json({ ok: true, db: dbPath() });
-  }
-
-  if (url.pathname === "/api/requests" && req.method === "GET") {
-    const customer_id = url.searchParams.get("customer_id");
-    const data = listRequests({ customer_id: customer_id ? Number(customer_id) : null });
-    return json({ ok: true, data });
-  }
-
-  if (url.pathname === "/api/requests" && req.method === "POST") {
-    const body = await readBody(req);
-    if (!body) return bad("Invalid JSON");
-
-    // required
-    if (!body.customer_name || !body.item_name) return bad("Missing customer_name or item_name");
-
-    const created = createRequest(body);
-    return json({ ok: true, created }, 201);
-  }
-
-  // PATCH /api/requests/:id/status
-  const statusMatch = url.pathname.match(/^\/api\/requests\/(\d+)\/status$/);
-  if (statusMatch && req.method === "PATCH") {
-    const request_id = Number(statusMatch[1]);
-    const body = await readBody(req);
-    if (!body?.status_name) return bad("Missing status_name");
-
-    try {
-      updateStatus({ request_id, status_name: body.status_name });
-      return json({ ok: true });
-    } catch (e) {
-      return bad(e.message, 400);
-    }
-  }
-
-  // GET /api/requests/:id/notes
-  const notesMatch = url.pathname.match(/^\/api\/requests\/(\d+)\/notes$/);
-  if (notesMatch && req.method === "GET") {
-    const request_id = Number(notesMatch[1]);
-    return json({ ok: true, data: listNotes({ request_id }) });
-  }
-
-  // POST /api/requests/:id/notes
-  if (notesMatch && req.method === "POST") {
-    const request_id = Number(notesMatch[1]);
-    const body = await readBody(req);
-    if (!body?.note_text) return bad("Missing note_text");
-
-    addNote({ request_id, note_text: body.note_text });
-    return json({ ok: true }, 201);
-  }
-
-  // -----------------------
-  // Static
-  // -----------------------
-  const staticRes = await serveStatic(url.pathname);
-  if (staticRes) return staticRes;
-
-  return new Response("Not Found", { status: 404 });
-}, { port: PORT });

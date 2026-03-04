@@ -5,287 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SourceFlow — Requests</title>
 
-  <link rel="stylesheet" href="../style-example.css" />
   <link rel="stylesheet" href="./team.css" />
-
-  <style>
-    .container { max-width: 1050px; margin: 0 auto; padding: 22px 16px 70px; }
-    .hero { margin-top: 10px; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 900px){ .row { grid-template-columns: 1fr; } }
-
-    .panel {
-      border: 1px solid rgba(255,255,255,0.16);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.06);
-      padding: 16px;
-    }
-
-    .grid5 { display:grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-    @media (max-width: 900px){ .grid5 { grid-template-columns: 1fr 1fr; } }
-
-    label { font-weight: 700; display:block; margin-bottom: 6px; }
-    input { width: 100%; padding: 10px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.18); background: rgba(0,0,0,0.25); color: white; }
-    button { padding: 10px 14px; border-radius: 12px; font-weight: 800; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.10); color: white; cursor: pointer; }
-    button:hover { background: rgba(255,255,255,0.14); }
-
-    table { width:100%; border-collapse: collapse; overflow:hidden; border-radius: 14px; }
-    th, td { padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.12); font-size: 14px; }
-    th { text-align:left; opacity: 0.9; }
-    .muted { opacity: 0.75; }
-    .top-actions { display:flex; justify-content: space-between; align-items:center; gap: 10px; flex-wrap:wrap; }
-    .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16); font-weight: 800; font-size: 12px; }
-  </style>
+  <link rel="stylesheet" href="./app.css" />
 </head>
 
 <body>
   <header>
     <nav aria-label="Team navigation">
-      <a href="../index.html">← Back to Teams</a>
-      <a href="./index.html">Team Home</a>
-      <a href="./ui.html">UI</a>
-      <a href="./db.html">Database</a>
-      <a href="./routes.html">Routes</a>
-      <a href="./architecture.html">Architecture</a>
-      <a href="./requests.html" aria-current="page">Requests</a>
-      <a href="./admin.html">Admin</a>
+      <a href="/teams/index.html">← Back to Teams</a>
+      <a href="/teams/the-four-loop/index.html">Team Home</a>
+      <a href="/teams/the-four-loop/ui.html">UI</a>
+      <a href="/teams/the-four-loop/db.html">Database</a>
+      <a href="/teams/the-four-loop/routes.html">Routes</a>
+      <a href="/teams/the-four-loop/architecture.html">Architecture</a>
+      <a aria-current="page" href="/requests.html">Requests</a>
+      <a href="/admin.html">Admin</a>
     </nav>
   </header>
 
   <main class="container">
-    <section class="hero">
-      <h1>Requests</h1>
-      <p class="muted">Customer view: create a request and track it. (Admin updates status/notes.)</p>
+    <h1>Requests</h1>
+    <p>Create, track, and update personal shopping requests.</p>
+
+    <section class="card">
+      <h2>Create a new request</h2>
+
+      <form id="createForm">
+        <div class="grid">
+          <label>
+            Item name <span aria-hidden="true">*</span>
+            <input name="item_name" required />
+          </label>
+
+          <label>
+            Brand
+            <input name="brand" />
+          </label>
+
+          <label>
+            Budget (£)
+            <input name="budget_gbp" type="number" step="0.01" min="0" />
+          </label>
+
+          <label>
+            Size
+            <input name="size" />
+          </label>
+
+          <label>
+            Colour
+            <input name="colour" />
+          </label>
+        </div>
+
+        <button type="submit">Create</button>
+        <span id="msg" role="status" style="margin-left:12px;"></span>
+      </form>
     </section>
 
-    <section class="row">
-      <div class="panel">
-        <div class="top-actions">
-          <h2 style="margin:0">Create a new request</h2>
-          <span id="who" class="pill"></span>
-        </div>
-
-        <form id="form" style="margin-top:12px">
-          <div class="grid5">
-            <div>
-              <label for="customer_name">Your name *</label>
-              <input id="customer_name" required />
-            </div>
-            <div>
-              <label for="customer_email">Email (optional)</label>
-              <input id="customer_email" type="email" />
-            </div>
-            <div>
-              <label for="item_name">Item *</label>
-              <input id="item_name" required />
-            </div>
-            <div>
-              <label for="brand">Brand</label>
-              <input id="brand" />
-            </div>
-            <div>
-              <label for="budget_gbp">Budget (£)</label>
-              <input id="budget_gbp" type="number" step="0.01" />
-            </div>
-            <div>
-              <label for="size">Size</label>
-              <input id="size" />
-            </div>
-            <div>
-              <label for="colour">Colour</label>
-              <input id="colour" />
-            </div>
-          </div>
-
-          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button type="submit">Create</button>
-            <button type="button" id="refresh">Refresh</button>
-          </div>
-
-          <p id="msg" class="muted" style="margin-top:10px"></p>
-        </form>
+    <section class="card" style="margin-top:18px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <h2 style="margin:0;">All requests</h2>
+        <button id="refreshBtn" type="button">Refresh</button>
       </div>
 
-      <div class="panel">
-        <div class="top-actions">
-          <h2 style="margin:0">My requests</h2>
-          <span class="muted">Shows only your items (by customer id).</span>
-        </div>
-
-        <div style="margin-top:10px; overflow:auto;">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th><th>Item</th><th>Brand</th><th>Status</th><th>Created</th>
-              </tr>
-            </thead>
-            <tbody id="myRows">
-              <tr><td colspan="5" class="muted">No data yet.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" style="margin-top:14px">
-      <div class="top-actions">
-        <h2 style="margin:0">All requests (demo)</h2>
-        <span class="muted">In the real system, this is admin-only.</span>
-      </div>
-
-      <div style="margin-top:10px; overflow:auto;">
+      <div class="tableWrap" style="margin-top:12px;">
         <table>
           <thead>
             <tr>
-              <th>ID</th><th>Customer</th><th>Item</th><th>Brand</th><th>Budget</th><th>Status</th><th>Created</th>
+              <th>ID</th>
+              <th>Item</th>
+              <th>Brand</th>
+              <th>Budget</th>
+              <th>Status</th>
+              <th>Created</th>
             </tr>
           </thead>
-          <tbody id="allRows">
-            <tr><td colspan="7" class="muted">No data yet.</td></tr>
-          </tbody>
+          <tbody id="rows"></tbody>
         </table>
       </div>
     </section>
   </main>
 
   <script>
-    const API = (path) => `${location.origin}${path}`;
+    const rowsEl = document.getElementById("rows");
+    const msgEl = document.getElementById("msg");
 
-    // Keep a "session customer_id" locally (so customer can come back and see their own)
-    const LS_KEY = "sourceflow_customer_id";
-    const LS_NAME = "sourceflow_customer_name";
-    const LS_EMAIL = "sourceflow_customer_email";
+    async function loadRequests() {
+      const res = await fetch("/api/requests");
+      const data = await res.json();
 
-    function setMsg(t){ document.getElementById("msg").textContent = t; }
-
-    async function apiGet(path){
-      const res = await fetch(API(path));
-      return await res.json();
-    }
-
-    async function apiPost(path, data){
-      const res = await fetch(API(path), {
-        method: "POST",
-        headers: {"content-type":"application/json"},
-        body: JSON.stringify(data)
-      });
-      return await res.json();
-    }
-
-    function formatDate(iso){
-      if (!iso) return "";
-      return new Date(iso).toLocaleString();
-    }
-
-    function renderRows(tbody, rows, kind){
-      if (!rows.length){
-        tbody.innerHTML = `<tr><td colspan="${kind === "all" ? 7 : 5}" class="muted">No requests found.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = rows.map(r => {
-        if (kind === "my"){
-          return `
-            <tr>
-              <td>${r.request_id}</td>
-              <td>${r.item_name}</td>
-              <td>${r.brand ?? ""}</td>
-              <td>${r.status_name}</td>
-              <td>${formatDate(r.created_at)}</td>
-            </tr>
-          `;
-        }
-
-        return `
-          <tr>
-            <td>${r.request_id}</td>
-            <td>${r.customer_name}</td>
-            <td>${r.item_name}</td>
-            <td>${r.brand ?? ""}</td>
-            <td>${r.budget_gbp ?? ""}</td>
-            <td>${r.status_name}</td>
-            <td>${formatDate(r.created_at)}</td>
-          </tr>
+      rowsEl.innerHTML = "";
+      for (const r of data) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.request_id}</td>
+          <td>${escapeHtml(r.item_name)}</td>
+          <td>${escapeHtml(r.brand ?? "")}</td>
+          <td>${r.budget_gbp ?? ""}</td>
+          <td>${escapeHtml(r.status_name)}</td>
+          <td>${new Date(r.created_at).toLocaleString()}</td>
         `;
-      }).join("");
-    }
-
-    async function loadAll(){
-      const all = await apiGet("/api/requests");
-      const allRows = all?.data ?? [];
-      renderRows(document.getElementById("allRows"), allRows, "all");
-    }
-
-    async function loadMine(){
-      const customer_id = localStorage.getItem(LS_KEY);
-      if (!customer_id){
-        renderRows(document.getElementById("myRows"), [], "my");
-        return;
+        rowsEl.appendChild(tr);
       }
-      const mine = await apiGet(`/api/requests?customer_id=${encodeURIComponent(customer_id)}`);
-      const myRows = mine?.data ?? [];
-      renderRows(document.getElementById("myRows"), myRows, "my");
     }
 
-    async function refresh(){
-      await loadMine();
-      await loadAll();
-    }
+    document.getElementById("refreshBtn").addEventListener("click", loadRequests);
 
-    // Init fields from local storage
-    const nameInput = document.getElementById("customer_name");
-    const emailInput = document.getElementById("customer_email");
-
-    nameInput.value = localStorage.getItem(LS_NAME) ?? "";
-    emailInput.value = localStorage.getItem(LS_EMAIL) ?? "";
-
-    document.getElementById("who").textContent =
-      localStorage.getItem(LS_KEY) ? `Customer ID: ${localStorage.getItem(LS_KEY)}` : "Not registered yet";
-
-    document.getElementById("refresh").addEventListener("click", refresh);
-
-    document.getElementById("form").addEventListener("submit", async (e) => {
+    document.getElementById("createForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      setMsg("Creating…");
+      msgEl.textContent = "Creating...";
 
-      const payload = {
-        customer_name: nameInput.value.trim(),
-        customer_email: emailInput.value.trim() || null,
-        item_name: document.getElementById("item_name").value.trim(),
-        brand: document.getElementById("brand").value.trim() || null,
-        budget_gbp: document.getElementById("budget_gbp").value ? Number(document.getElementById("budget_gbp").value) : null,
-        size: document.getElementById("size").value.trim() || null,
-        colour: document.getElementById("colour").value.trim() || null
-      };
+      const fd = new FormData(e.target);
+      const payload = Object.fromEntries(fd.entries());
 
-      const out = await apiPost("/api/requests", payload);
+      const res = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-      if (!out.ok){
-        setMsg(`❌ ${out.error || "Failed"}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        msgEl.textContent = err.error || "Failed to create";
         return;
       }
 
-      // Save customer session so they can see their own requests
-      localStorage.setItem(LS_KEY, out.created.customer_id);
-      localStorage.setItem(LS_NAME, payload.customer_name);
-      if (payload.customer_email) localStorage.setItem(LS_EMAIL, payload.customer_email);
-
-      document.getElementById("who").textContent = `Customer ID: ${out.created.customer_id}`;
-
-      setMsg(`✅ Created request #${out.created.request_id}. Refreshing table…`);
-
-      // Clear item fields only
-      document.getElementById("item_name").value = "";
-      document.getElementById("brand").value = "";
-      document.getElementById("budget_gbp").value = "";
-      document.getElementById("size").value = "";
-      document.getElementById("colour").value = "";
-
-      await refresh();
-      setMsg(`✅ Saved and loaded.`);
+      e.target.reset();
+      msgEl.textContent = "✅ Created";
+      await loadRequests();
     });
 
-    refresh();
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
+    loadRequests();
   </script>
 </body>
 </html>
