@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SourceFlow — Requests</title>
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <header>
+    <nav aria-label="App navigation">
+      <a href="/app/index.html">Home</a>
+      <a href="/app/requests.html" aria-current="page">Requests</a>
+      <a href="/app/admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Requests</h1>
+    <p>Customer view: submit a request and see all submitted requests.</p>
+
+    <section class="card">
+      <h2>Create a new request</h2>
+      <form id="createForm">
+        <div class="grid">
+          <label>Customer name
+            <input name="customer_name" required />
+          </label>
+          <label>Email
+            <input name="customer_email" type="email" />
+          </label>
+          <label>Item name
+            <input name="item_name" required />
+          </label>
+          <label>Brand
+            <input name="brand" />
+          </label>
+          <label>Budget (£)
+            <input name="budget_gbp" type="number" step="0.01" />
+          </label>
+          <label>Size
+            <input name="size" />
+          </label>
+          <label>Colour
+            <input name="colour" />
+          </label>
+        </div>
+
+        <div style="margin-top:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button type="submit">Create request</button>
+          <button id="refreshBtn" type="button">Refresh</button>
+          <span id="msg"></span>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h2>All requests</h2>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Customer</th>
+              <th>Item</th>
+              <th>Brand</th>
+              <th>Budget</th>
+              <th>Status</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

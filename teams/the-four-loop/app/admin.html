@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SourceFlow — Admin</title>
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <header>
+    <nav aria-label="App navigation">
+      <a href="/app/index.html">Home</a>
+      <a href="/app/requests.html">Requests</a>
+      <a href="/app/admin.html" aria-current="page">Admin</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Admin</h1>
+    <p>Admin view: see all requests and update their status.</p>
+
+    <section class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+        <h2 style="margin:0;">Queue</h2>
+        <button id="refreshBtn" type="button">Refresh</button>
+      </div>
+
+      <div class="tableWrap" style="margin-top:12px;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Customer</th>
+              <th>Item</th>
+              <th>Status</th>
+              <th>Update</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
