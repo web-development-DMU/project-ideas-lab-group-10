@@ -15,18 +15,36 @@
     </nav>
   </header>
 
-  <main class="container">
+  <main class="container" id="adminPage">
     <section class="hero">
       <h1>Admin</h1>
-      <p>
-        Administrative view: review requests, update status, and add internal notes.
-      </p>
+      <p>Administrative view: review requests, update status, and add internal notes.</p>
     </section>
 
-    <section class="card">
+    <section class="card" id="adminLoginCard">
+      <h2 class="section-title">Admin access</h2>
+      <p class="small">Enter the demo admin password to continue.</p>
+
+      <form id="adminLoginForm" novalidate>
+        <label>
+          Password
+          <input id="adminPasswordInput" type="password" />
+        </label>
+
+        <div class="actions">
+          <button type="submit">Enter admin</button>
+          <span id="adminLoginStatus" class="status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" id="adminPanel" hidden>
       <div class="actions" style="justify-content: space-between;">
         <h2 class="section-title" style="margin: 0;">Request queue</h2>
-        <button type="button" id="refreshAdminBtn">Refresh</button>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <button type="button" id="refreshAdminBtn">Refresh</button>
+          <button type="button" id="logoutAdminBtn">Log out</button>
+        </div>
       </div>
 
       <div class="table-wrap">

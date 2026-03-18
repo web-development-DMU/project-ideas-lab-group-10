@@ -7,7 +7,6 @@
   --border: rgba(255, 255, 255, 0.16);
   --text: #f4f7ff;
   --muted: #c8d2eb;
-  --accent: #b7c7ff;
   --danger: #ffb4b4;
   --success: #b8f1c8;
   --shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
@@ -92,21 +91,12 @@ nav a:hover {
   border-radius: 1.25rem;
   padding: 1.25rem;
   box-shadow: var(--shadow);
-}
-
-.card + .card {
-  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
 }
 
 .section-title {
   margin: 0 0 1rem;
   font-size: 1.6rem;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
 }
 
 .form-grid {

@@ -12,99 +12,159 @@ import {
 const PORT = 8000;
 const ROOT = new URL(".", import.meta.url);
 
-// Initialise DB
 getDb();
-
 console.log("DB ready at:", getDbPath());
-console.log(`Server running at http://localhost:${PORT}/`);
+console.log(`Listening on http://localhost:${PORT}/`);
 
 Deno.serve({ port: PORT }, async (req) => {
   const url = new URL(req.url);
   const pathname = url.pathname;
 
-  try {
-    // ---------------- API ----------------
-    if (pathname.startsWith("/api/")) {
-      return handleApi(req, pathname);
-    }
-
-    // ---------------- STATIC ----------------
-    return serveStatic(pathname);
-  } catch (err) {
-    console.error("SERVER ERROR:", err);
-    return new Response("Internal Server Error", { status: 500 });
+  if (pathname.startsWith("/api/")) {
+    return handleApi(req, pathname);
   }
+
+  return serveStatic(pathname);
 });
 
-// ---------------- API HANDLER ----------------
 async function handleApi(req, pathname) {
-  if (req.method === "GET" && pathname === "/api/requests") {
-    return json({ ok: true, data: listRequests() });
+  try {
+    if (req.method === "GET" && pathname === "/api/health") {
+      return json({ ok: true, db: getDbPath() });
+    }
+
+    if (req.method === "GET" && pathname === "/api/requests") {
+      return json({ ok: true, data: listRequests() });
+    }
+
+    if (req.method === "POST" && pathname === "/api/requests") {
+      const body = await safeJson(req);
+
+      const payload = {
+        customer_name: String(body.customer_name ?? "").trim(),
+        customer_email: String(body.customer_email ?? "").trim() || null,
+        item_name: String(body.item_name ?? "").trim(),
+        brand: String(body.brand ?? "").trim() || null,
+        budget_gbp: body.budget_gbp === "" || body.budget_gbp == null
+          ? null
+          : Number(body.budget_gbp),
+        size: String(body.size ?? "").trim() || null,
+        colour: String(body.colour ?? "").trim() || null,
+      };
+
+      if (!payload.customer_name) {
+        return json({ ok: false, error: "Customer name is required." }, 400);
+      }
+
+      if (!payload.item_name) {
+        return json({ ok: false, error: "Item name is required." }, 400);
+      }
+
+      if (
+        payload.budget_gbp !== null &&
+        (Number.isNaN(payload.budget_gbp) || payload.budget_gbp < 0)
+      ) {
+        return json({ ok: false, error: "Budget must be a valid number." }, 400);
+      }
+
+      const created = createRequest(payload);
+      return json({ ok: true, data: created }, 201);
+    }
+
+    const statusMatch = pathname.match(/^\/api\/requests\/(\d+)\/status$/);
+    if (req.method === "PATCH" && statusMatch) {
+      const requestId = Number(statusMatch[1]);
+      const body = await safeJson(req);
+      const statusName = String(body.status_name ?? "").trim();
+
+      if (!statusName) {
+        return json({ ok: false, error: "status_name is required." }, 400);
+      }
+
+      updateRequestStatus(requestId, statusName);
+      return json({ ok: true });
+    }
+
+    const notesGetMatch = pathname.match(/^\/api\/requests\/(\d+)\/notes$/);
+    if (req.method === "GET" && notesGetMatch) {
+      const requestId = Number(notesGetMatch[1]);
+      return json({ ok: true, data: listNotesForRequest(requestId) });
+    }
+
+    const notesPostMatch = pathname.match(/^\/api\/requests\/(\d+)\/notes$/);
+    if (req.method === "POST" && notesPostMatch) {
+      const requestId = Number(notesPostMatch[1]);
+      const body = await safeJson(req);
+      const noteText = String(body.note_text ?? "").trim();
+
+      if (!noteText) {
+        return json({ ok: false, error: "note_text is required." }, 400);
+      }
+
+      addNote(requestId, noteText);
+      return json({ ok: true });
+    }
+
+    return json({ ok: false, error: "Not found." }, 404);
+  } catch (error) {
+    console.error("API error:", error);
+    return json(
+      {
+        ok: false,
+        error: error?.message || "Internal server error.",
+      },
+      500,
+    );
   }
-
-  if (req.method === "POST" && pathname === "/api/requests") {
-    const body = await safeJson(req);
-
-    const created = createRequest({
-      customer_name: body.customer_name,
-      customer_email: body.customer_email,
-      item_name: body.item_name,
-      brand: body.brand,
-      budget_gbp: body.budget_gbp,
-      size: body.size,
-      colour: body.colour,
-    });
-
-    return json({ ok: true, data: created }, 201);
-  }
-
-  const match = pathname.match(/^\/api\/requests\/(\d+)\/status$/);
-  if (req.method === "PATCH" && match) {
-    const id = Number(match[1]);
-    const body = await safeJson(req);
-
-    updateRequestStatus(id, body.status_name);
-
-    return json({ ok: true });
-  }
-
-  return json({ ok: false, error: "Not found" }, 404);
 }
 
-// ---------------- STATIC ----------------
 async function serveStatic(pathname) {
-  let path = pathname;
+  let resolvedPath = pathname;
 
-  if (path === "/") path = "/app/index.html";
+  if (resolvedPath === "/") {
+    return Response.redirect("http://localhost:8000/app/index.html", 302);
+  }
 
-  const fileUrl = new URL("." + path, ROOT);
+  if (resolvedPath.includes("..")) {
+    return new Response("Bad request", { status: 400 });
+  }
+
+  const fileUrl = new URL("." + resolvedPath, ROOT);
 
   try {
     const data = await Deno.readFile(fileUrl);
-
     return new Response(data, {
-      headers: { "content-type": getType(path) },
+      status: 200,
+      headers: { "content-type": getContentType(resolvedPath) },
     });
   } catch {
     return new Response("Not Found", { status: 404 });
   }
 }
 
-// ---------------- HELPERS ----------------
-function getType(path) {
-  const map = {
-    ".html": "text/html",
-    ".css": "text/css",
-    ".js": "text/javascript",
+function getContentType(pathname) {
+  const extension = extname(pathname).toLowerCase();
+
+  const types = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
   };
 
-  return map[extname(path)] || "text/plain";
+  return types[extension] || "application/octet-stream";
 }
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+    },
   });
 }
 
