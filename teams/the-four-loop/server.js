@@ -19,9 +19,13 @@ import {
   listRequests,
 
   updateRequestStatus,
+<<<<<<< HEAD
 
   verifyRequestPassword,
 
+=======
+  verifyRequestPassword,
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
 } from "./src/db.js";
 
 
@@ -164,9 +168,13 @@ async function handleApi(req, pathname) {
         size: String(body.size ?? "").trim() || null,
 
         colour: String(body.colour ?? "").trim() || null,
+<<<<<<< HEAD
 
         request_password: String(body.request_password ?? "").trim(),
 
+=======
+        request_password: String(body.request_password ?? "").trim(),
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
       };
 
 
@@ -187,6 +195,7 @@ async function handleApi(req, pathname) {
 
       }
 
+<<<<<<< HEAD
 
 
 
@@ -199,6 +208,12 @@ async function handleApi(req, pathname) {
 
 
 
+=======
+      if (!payload.request_password) {
+        return json({ ok: false, error: "Request password is required." }, 400);
+      }
+
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
       if (
 
         payload.budget_gbp !== null &&
@@ -220,6 +235,7 @@ async function handleApi(req, pathname) {
 
     }
 
+<<<<<<< HEAD
 
 
 
@@ -264,6 +280,26 @@ async function handleApi(req, pathname) {
 
 
 
+=======
+    if (req.method === "POST" && pathname === "/api/requests/verify") {
+      const body = await safeJson(req);
+      const requestId = Number(body.request_id);
+      const password = String(body.request_password ?? "").trim();
+
+      if (!requestId || !password) {
+        return json({ ok: false, error: "request_id and request_password are required." }, 400);
+      }
+
+      const isValid = verifyRequestPassword(requestId, password);
+
+      if (!isValid) {
+        return json({ ok: false, error: "Incorrect password." }, 401);
+      }
+
+      return json({ ok: true });
+    }
+
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
     const statusMatch = pathname.match(/^\/api\/requests\/(\d+)\/status$/);
 
     if (req.method === "PATCH" && statusMatch) {
@@ -483,5 +519,9 @@ async function safeJson(req) {
     return {};
 
   }
+<<<<<<< HEAD
 
 }
+=======
+}
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047

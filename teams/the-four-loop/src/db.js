@@ -71,9 +71,13 @@ export function getDb() {
       size TEXT,
 
       colour TEXT,
+<<<<<<< HEAD
 
       request_password TEXT NOT NULL,
 
+=======
+      request_password TEXT NOT NULL,
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
       status_id INTEGER NOT NULL,
 
       created_at TEXT NOT NULL,
@@ -279,17 +283,25 @@ export function createRequest(payload) {
       size,
 
       colour,
+<<<<<<< HEAD
 
       request_password,
 
+=======
+      request_password,
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
       status_id,
 
       created_at,
 
       updated_at
+<<<<<<< HEAD
 
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
+=======
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
   `).run(
 
     payload.customer_name,
@@ -305,9 +317,13 @@ export function createRequest(payload) {
     payload.size,
 
     payload.colour,
+<<<<<<< HEAD
 
     payload.request_password,
 
+=======
+    payload.request_password,
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
     statusId,
 
     now,
@@ -323,6 +339,7 @@ export function createRequest(payload) {
 
 }
 
+<<<<<<< HEAD
 
 
 
@@ -355,6 +372,21 @@ export function verifyRequestPassword(requestId, password) {
 
 
 
+=======
+export function verifyRequestPassword(requestId, password) {
+  const db = getDb();
+
+  const row = db.prepare(`
+    SELECT request_password
+    FROM requests
+    WHERE request_id = ?
+  `).get(requestId);
+
+  if (!row) return false;
+  return row.request_password === password;
+}
+
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
 export function updateRequestStatus(requestId, statusName) {
 
   const db = getDb();
@@ -532,6 +564,10 @@ export function getDashboardSummary() {
     recent,
 
   };
+<<<<<<< HEAD
 
 }
 
+=======
+}
+>>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
