@@ -1,7 +1,7 @@
+
 const ADMIN_PASSWORD = "sourceflowadmin";
 
 const ADMIN_SESSION_KEY = "sourceflow_admin_logged_in";
-const REQUEST_SESSION_PREFIX = "sourceflow_request_access_";
 
 const REQUEST_SESSION_PREFIX = "sourceflow_request_access_";
 
@@ -107,41 +107,6 @@ function requestLink(id) {
 
 }
 
-<<<<<<< HEAD
-=======
-function markRequestAccessGranted(id) {
-  sessionStorage.setItem(`${REQUEST_SESSION_PREFIX}${id}`, "true");
-}
-
-function hasRequestAccess(id) {
-  return sessionStorage.getItem(`${REQUEST_SESSION_PREFIX}${id}`) === "true";
-}
-
-async function promptForRequestPasswordAndOpen(id) {
-  const password = window.prompt("Enter the request password to open this record:");
-  if (!password) return;
-
-  try {
-    await fetchJson("/api/requests/verify", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        request_id: id,
-        request_password: password,
-      }),
-    });
-
-    markRequestAccessGranted(id);
-    window.location.href = requestLink(id);
-  } catch (error) {
-    window.alert(error.message);
-  }
-}
-
-async function loadDashboard() {
-  const totalEl = document.getElementById("statTotal");
-  if (!totalEl) return;
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
 
 
 
@@ -203,30 +168,6 @@ async function promptForRequestPasswordAndOpen(id) {
 
   }
 
-<<<<<<< HEAD
-=======
-  recentList.innerHTML = data.recent.map((row) => `
-    <div class="list-item">
-      <div class="list-item-top">
-        <div>
-          <strong>${escapeHtml(row.item_name)}</strong><br />
-          <span class="small">${escapeHtml(row.customer_name)}</span>
-        </div>
-        <span class="status-pill ${statusClass(row.status_name)}">${escapeHtml(row.status_name)}</span>
-      </div>
-      <div class="actions">
-        <button type="button" data-open-request="${row.request_id}">Open detail</button>
-      </div>
-    </div>
-  `).join("");
-
-  recentList.querySelectorAll("[data-open-request]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = Number(button.getAttribute("data-open-request"));
-      promptForRequestPasswordAndOpen(id);
-    });
-  });
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
 }
 
 
@@ -371,13 +312,9 @@ function setupQuickRequestForm() {
           size: document.getElementById("quick_size").value.trim(),
 
           colour: "",
-<<<<<<< HEAD
 
           request_password: "guest123",
 
-=======
-          request_password: "guest123",
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
         }),
 
       });
@@ -450,18 +387,13 @@ async function loadRequestsTable() {
       <td>${row.budget_gbp ?? ""}</td>
 
       <td>${formatDate(row.updated_at)}</td>
-<<<<<<< HEAD
 
       <td><button type="button" data-open-request="${row.request_id}">View</button></td>
 
-=======
-      <td><button type="button" data-open-request="${row.request_id}">View</button></td>
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
     </tr>
 
   `).join("");
 
-<<<<<<< HEAD
 
 
 
@@ -477,14 +409,6 @@ async function loadRequestsTable() {
 
   });
 
-=======
-  tbody.querySelectorAll("[data-open-request]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const id = Number(button.getAttribute("data-open-request"));
-      promptForRequestPasswordAndOpen(id);
-    });
-  });
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
 }
 
 
@@ -538,13 +462,9 @@ function setupRequestForm() {
           size: document.getElementById("size").value.trim(),
 
           colour: document.getElementById("colour").value.trim(),
-<<<<<<< HEAD
 
           request_password: document.getElementById("request_password").value.trim(),
 
-=======
-          request_password: document.getElementById("request_password").value.trim(),
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
         }),
 
       });
@@ -670,13 +590,9 @@ async function loadAdminTable() {
         </div>
 
       </td>
-<<<<<<< HEAD
 
       <td><button type="button" data-open-request="${row.request_id}">Open</button></td>
 
-=======
-      <td><button type="button" data-open-request="${row.request_id}">Open</button></td>
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
     </tr>
 
   `).join("");
@@ -714,7 +630,6 @@ async function loadAdminTable() {
 
   });
 
-<<<<<<< HEAD
 
 
 
@@ -730,14 +645,6 @@ async function loadAdminTable() {
 
   });
 
-=======
-  tbody.querySelectorAll("[data-open-request]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const id = Number(button.getAttribute("data-open-request"));
-      promptForRequestPasswordAndOpen(id);
-    });
-  });
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
 }
 
 
@@ -832,37 +739,9 @@ function setupAdminPage() {
 function getRequestIdFromQuery() {
 
   const params = new URLSearchParams(window.location.search);
-<<<<<<< HEAD
 
   return Number(params.get("id"));
 
-=======
-  return Number(params.get("id"));
-}
-
-async function ensureRequestPasswordAccess(requestId) {
-  if (hasRequestAccess(requestId)) return true;
-
-  const password = window.prompt("Enter the request password to access this request:");
-  if (!password) return false;
-
-  try {
-    await fetchJson("/api/requests/verify", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        request_id: requestId,
-        request_password: password,
-      }),
-    });
-
-    markRequestAccessGranted(requestId);
-    return true;
-  } catch (error) {
-    window.alert(error.message);
-    return false;
-  }
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
 }
 
 
@@ -915,7 +794,6 @@ async function ensureRequestPasswordAccess(requestId) {
 
   }
 
-<<<<<<< HEAD
 }
 
 
@@ -956,14 +834,6 @@ async function loadRequestDetail() {
 
 
 
-=======
-  const allowed = await ensureRequestPasswordAccess(id);
-  if (!allowed) {
-    window.location.href = "/app/requests.html";
-    return;
-  }
-
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
   const result = await fetchJson(`/api/requests/${id}`);
 
   const { request, notes } = result.data;
@@ -1035,13 +905,9 @@ async function loadRequestDetail() {
     <div class="timeline-item">
 
       <div class="timeline-dot" style="background:${item.active ? "#7ad88d" : "rgba(255,255,255,0.3)"}"></div>
-<<<<<<< HEAD
 
       <div><strong>${item.name}</strong></div>
 
-=======
-      <div><strong>${item.name}</strong></div>
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
     </div>
 
   `).join("");
@@ -1228,11 +1094,7 @@ async function init() {
 
 }
 
-<<<<<<< HEAD
 
 
 
 init();
-=======
-init();
->>>>>>> 01417498f0a4447d852fb1c60a71256e8cea9047
