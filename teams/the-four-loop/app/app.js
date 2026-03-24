@@ -1,5 +1,6 @@
 const ADMIN_PASSWORD = "sourceflowadmin";
 const ADMIN_SESSION_KEY = "sourceflow_admin_logged_in";
+const REQUEST_SESSION_PREFIX = "sourceflow_request_access_";
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -48,6 +49,35 @@ function requestLink(id) {
   return `/app/request.html?id=${id}`;
 }
 
+function markRequestAccessGranted(id) {
+  sessionStorage.setItem(`${REQUEST_SESSION_PREFIX}${id}`, "true");
+}
+
+function hasRequestAccess(id) {
+  return sessionStorage.getItem(`${REQUEST_SESSION_PREFIX}${id}`) === "true";
+}
+
+async function promptForRequestPasswordAndOpen(id) {
+  const password = window.prompt("Enter the request password to open this record:");
+  if (!password) return;
+
+  try {
+    await fetchJson("/api/requests/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        request_id: id,
+        request_password: password,
+      }),
+    });
+
+    markRequestAccessGranted(id);
+    window.location.href = requestLink(id);
+  } catch (error) {
+    window.alert(error.message);
+  }
+}
+
 async function loadDashboard() {
   const totalEl = document.getElementById("statTotal");
   if (!totalEl) return;
@@ -78,10 +108,17 @@ async function loadDashboard() {
         <span class="status-pill ${statusClass(row.status_name)}">${escapeHtml(row.status_name)}</span>
       </div>
       <div class="actions">
-        <a class="text-link" href="${requestLink(row.request_id)}">Open detail</a>
+        <button type="button" data-open-request="${row.request_id}">Open detail</button>
       </div>
     </div>
   `).join("");
+
+  recentList.querySelectorAll("[data-open-request]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = Number(button.getAttribute("data-open-request"));
+      promptForRequestPasswordAndOpen(id);
+    });
+  });
 }
 
 function setupQuickRequestForm() {
@@ -106,6 +143,7 @@ function setupQuickRequestForm() {
           budget_gbp: document.getElementById("quick_budget").value.trim(),
           size: document.getElementById("quick_size").value.trim(),
           colour: "",
+          request_password: "guest123",
         }),
       });
 
@@ -140,9 +178,16 @@ async function loadRequestsTable() {
       <td>${escapeHtml(row.item_name)}</td>
       <td>${row.budget_gbp ?? ""}</td>
       <td>${formatDate(row.updated_at)}</td>
-      <td><a class="text-link" href="${requestLink(row.request_id)}">View</a></td>
+      <td><button type="button" data-open-request="${row.request_id}">View</button></td>
     </tr>
   `).join("");
+
+  tbody.querySelectorAll("[data-open-request]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = Number(button.getAttribute("data-open-request"));
+      promptForRequestPasswordAndOpen(id);
+    });
+  });
 }
 
 function setupRequestForm() {
@@ -168,6 +213,7 @@ function setupRequestForm() {
           budget_gbp: document.getElementById("budget_gbp").value.trim(),
           size: document.getElementById("size").value.trim(),
           colour: document.getElementById("colour").value.trim(),
+          request_password: document.getElementById("request_password").value.trim(),
         }),
       });
 
@@ -227,7 +273,7 @@ async function loadAdminTable() {
           <button type="button" data-save-status="${row.request_id}">Save</button>
         </div>
       </td>
-      <td><a class="text-link" href="${requestLink(row.request_id)}">Open</a></td>
+      <td><button type="button" data-open-request="${row.request_id}">Open</button></td>
     </tr>
   `).join("");
 
@@ -243,6 +289,13 @@ async function loadAdminTable() {
       });
 
       await loadAdminTable();
+    });
+  });
+
+  tbody.querySelectorAll("[data-open-request]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const id = Number(button.getAttribute("data-open-request"));
+      promptForRequestPasswordAndOpen(id);
     });
   });
 }
@@ -288,7 +341,31 @@ function setupAdminPage() {
 
 function getRequestIdFromQuery() {
   const params = new URLSearchParams(window.location.search);
-  return params.get("id");
+  return Number(params.get("id"));
+}
+
+async function ensureRequestPasswordAccess(requestId) {
+  if (hasRequestAccess(requestId)) return true;
+
+  const password = window.prompt("Enter the request password to access this request:");
+  if (!password) return false;
+
+  try {
+    await fetchJson("/api/requests/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        request_id: requestId,
+        request_password: password,
+      }),
+    });
+
+    markRequestAccessGranted(requestId);
+    return true;
+  } catch (error) {
+    window.alert(error.message);
+    return false;
+  }
 }
 
 async function loadRequestDetail() {
@@ -298,6 +375,12 @@ async function loadRequestDetail() {
   const id = getRequestIdFromQuery();
   if (!id) {
     title.textContent = "Request not found";
+    return;
+  }
+
+  const allowed = await ensureRequestPasswordAccess(id);
+  if (!allowed) {
+    window.location.href = "/app/requests.html";
     return;
   }
 
@@ -334,9 +417,7 @@ async function loadRequestDetail() {
   document.getElementById("timelineList").innerHTML = timeline.map((item) => `
     <div class="timeline-item">
       <div class="timeline-dot" style="background:${item.active ? "#7ad88d" : "rgba(255,255,255,0.3)"}"></div>
-      <div>
-        <strong>${item.name}</strong>
-      </div>
+      <div><strong>${item.name}</strong></div>
     </div>
   `).join("");
 
