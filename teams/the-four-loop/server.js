@@ -9,6 +9,7 @@ import {
   listNotesForRequest,
   listRequests,
   updateRequestStatus,
+  verifyRequestPassword,
 } from "./src/db.js";
 
 const PORT = 8000;
@@ -74,6 +75,7 @@ async function handleApi(req, pathname) {
           : Number(body.budget_gbp),
         size: String(body.size ?? "").trim() || null,
         colour: String(body.colour ?? "").trim() || null,
+        request_password: String(body.request_password ?? "").trim(),
       };
 
       if (!payload.customer_name) {
@@ -82,6 +84,10 @@ async function handleApi(req, pathname) {
 
       if (!payload.item_name) {
         return json({ ok: false, error: "Item name is required." }, 400);
+      }
+
+      if (!payload.request_password) {
+        return json({ ok: false, error: "Request password is required." }, 400);
       }
 
       if (
@@ -93,6 +99,24 @@ async function handleApi(req, pathname) {
 
       const created = createRequest(payload);
       return json({ ok: true, data: created }, 201);
+    }
+
+    if (req.method === "POST" && pathname === "/api/requests/verify") {
+      const body = await safeJson(req);
+      const requestId = Number(body.request_id);
+      const password = String(body.request_password ?? "").trim();
+
+      if (!requestId || !password) {
+        return json({ ok: false, error: "request_id and request_password are required." }, 400);
+      }
+
+      const isValid = verifyRequestPassword(requestId, password);
+
+      if (!isValid) {
+        return json({ ok: false, error: "Incorrect password." }, 401);
+      }
+
+      return json({ ok: true });
     }
 
     const statusMatch = pathname.match(/^\/api\/requests\/(\d+)\/status$/);
