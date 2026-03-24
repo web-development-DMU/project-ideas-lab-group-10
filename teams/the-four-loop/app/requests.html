@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SourceFlow — Requests</title>
+  <title>SourceFlow — Request Detail</title>
   <link rel="stylesheet" href="./app.css" />
 </head>
 <body>
@@ -12,94 +12,79 @@
       <div class="brand">SourceFlow</div>
       <nav class="topnav" aria-label="Application navigation">
         <a href="/app/index.html">Dashboard</a>
-        <a href="/app/requests.html" aria-current="page">Requests</a>
+        <a href="/app/requests.html">Requests</a>
         <a href="/app/admin.html">Admin</a>
       </nav>
     </div>
   </header>
 
   <main class="app-shell">
-    <section class="hero-panel">
+    <section class="hero-panel detail-hero">
       <div>
-        <p class="eyebrow">Customer View</p>
-        <h1>Submit Request</h1>
-        <p class="intro">
-          Create a new personal shopping request and review all submitted requests.
-        </p>
+        <p class="eyebrow">Request Detail</p>
+        <h1 id="detailTitle">Request</h1>
+        <p class="intro">Detailed view of one request, including notes and status updates.</p>
       </div>
+      <a class="button-link secondary" href="/app/requests.html">Back to Requests</a>
     </section>
 
-    <section class="dashboard-grid">
+    <section class="detail-grid">
       <article class="panel">
         <div class="panel-header">
-          <h2>Create a New Request</h2>
+          <h2>Request Overview</h2>
+          <span id="detailStatusBadge" class="status-pill">New</span>
         </div>
 
-        <form id="requestForm" novalidate>
-          <div class="form-grid">
-            <label>
-              Customer name
-              <input id="customer_name" required />
-            </label>
-
-            <label>
-              Email
-              <input id="customer_email" type="email" />
-            </label>
-
-            <label>
-              Item name
-              <input id="item_name" required />
-            </label>
-
-            <label>
-              Brand
-              <input id="brand" />
-            </label>
-
-            <label>
-              Budget (£)
-              <input id="budget_gbp" type="number" step="0.01" min="0" />
-            </label>
-
-            <label>
-              Size
-              <input id="size" />
-            </label>
-
-            <label>
-              Colour
-              <input id="colour" />
-            </label>
-          </div>
-
-          <div class="actions">
-            <button type="submit">Submit Request</button>
-            <button type="button" id="refreshRequestsBtn" class="secondary-btn">Refresh</button>
-            <span id="requestStatus" class="status" role="status" aria-live="polite"></span>
-          </div>
-        </form>
+        <div class="detail-list" id="detailMeta"></div>
       </article>
 
       <article class="panel">
         <div class="panel-header">
-          <h2>Recent Requests</h2>
-          <span class="panel-subtle">Latest customer submissions</span>
+          <h2>Status Timeline</h2>
+        </div>
+        <div id="timelineList" class="timeline-list"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Customer</h2>
+        </div>
+        <div id="customerBlock" class="detail-list"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Notes & Updates</h2>
         </div>
 
-        <div class="table-wrap">
-          <table aria-label="Requests table">
-            <thead>
-              <tr>
-                <th>Status</th>
-                <th>Item</th>
-                <th>Budget</th>
-                <th>Updated</th>
-                <th>View</th>
-              </tr>
-            </thead>
-            <tbody id="requestsTableBody"></tbody>
-          </table>
+        <form id="noteForm">
+          <label>
+            Add note
+            <textarea id="noteText" placeholder="Add an update..."></textarea>
+          </label>
+          <div class="actions">
+            <button type="submit">Add Note</button>
+            <span id="noteStatus" class="status" role="status" aria-live="polite"></span>
+          </div>
+        </form>
+
+        <div id="notesList" class="list-stack"></div>
+      </article>
+
+      <article class="panel panel-wide">
+        <div class="panel-header">
+          <h2>Update Status</h2>
+        </div>
+
+        <div class="status-actions">
+          <select id="detailStatusSelect">
+            <option>New</option>
+            <option>In Progress</option>
+            <option>Sourced</option>
+            <option>Completed</option>
+          </select>
+          <button id="saveDetailStatusBtn" type="button">Save Changes</button>
+          <span id="detailStatusMessage" class="status" role="status" aria-live="polite"></span>
         </div>
       </article>
     </section>
