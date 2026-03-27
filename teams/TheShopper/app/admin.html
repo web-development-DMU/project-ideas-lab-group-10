@@ -1,79 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SourceFlow — Admin</title>
-  <link rel="stylesheet" href="./app.css" />
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="app.css">
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">SourceFlow</div>
-      <nav class="topnav" aria-label="Application navigation">
-        <a href="/app/index.html">Dashboard</a>
-        <a href="/app/requests.html">Requests</a>
-        <a href="/app/admin.html" aria-current="page">Admin</a>
-      </nav>
-    </div>
-  </header>
 
-  <main class="app-shell" id="adminPage">
-    <section class="hero-panel">
-      <div>
-        <p class="eyebrow">Concierge View</p>
-        <h1>Admin Queue</h1>
-        <p class="intro">
-          Review requests, update statuses, and open request detail records.
-        </p>
-      </div>
-    </section>
+<h1>Admin Login</h1>
 
-    <section class="panel" id="adminLoginCard">
-      <div class="panel-header">
-        <h2>Admin access</h2>
-      </div>
+<input type="password" id="password" placeholder="Enter admin password">
+<button onclick="login()">Login</button>
 
-      <form id="adminLoginForm" novalidate>
-        <label>
-          Password
-          <input id="adminPasswordInput" type="password" />
-        </label>
+<div id="adminArea" style="display:none;">
+  <h2>Admin Panel</h2>
+  <div id="adminList"></div>
+</div>
 
-        <div class="actions">
-          <button type="submit">Enter Admin</button>
-          <span id="adminLoginStatus" class="status" role="status" aria-live="polite"></span>
-        </div>
-      </form>
-    </section>
+<script>
+function login(){
+  const pass = document.getElementById("password").value;
 
-    <section class="panel" id="adminPanel" hidden>
-      <div class="panel-header">
-        <h2>Request Queue</h2>
-        <div class="panel-actions">
-          <button type="button" id="refreshAdminBtn" class="secondary-btn">Refresh</button>
-          <button type="button" id="logoutAdminBtn" class="secondary-btn">Log out</button>
-        </div>
-      </div>
+  if(pass === "admin123"){
+    document.getElementById("adminArea").style.display = "block";
+    loadAdmin();
+  } else {
+    alert("Wrong password");
+  }
+}
+</script>
 
-      <div class="table-wrap">
-        <table aria-label="Admin requests table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Customer</th>
-              <th>Item</th>
-              <th>Status</th>
-              <th>Update</th>
-              <th>Open</th>
-            </tr>
-          </thead>
-          <tbody id="adminTableBody"></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-
-  <script src="./app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

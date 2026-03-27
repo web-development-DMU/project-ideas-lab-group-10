@@ -2,14 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Four Loop — Architecture</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TheShopper — Architecture</title>
 
+  <!-- Shared styles -->
   <link rel="stylesheet" href="../style-example.css" />
   <link rel="stylesheet" href="./team.css" />
 </head>
 
 <body>
+
+  <!-- NAVIGATION -->
   <header>
     <nav aria-label="Team navigation">
       <a href="/teams/index.html">← Back to Teams</a>
@@ -21,56 +24,70 @@
     </nav>
   </header>
 
+  <!-- MAIN CONTENT -->
   <main>
-    <h1>Architecture Documentation</h1>
-    <p>High-level architecture for <strong>SourceFlow</strong> (Personal Shopping Request System).</p>
+    <h1>TheShopper System Architecture</h1>
 
-    <div class="grid">
-      <section class="card pad">
-        <h2>System overview</h2>
-        <ul>
-          <li><strong>Client:</strong> HTML/CSS pages (documentation + UI screens)</li>
-          <li><strong>Server:</strong> JavaScript server handling routes + validation</li>
-          <li><strong>Database:</strong> SQLite schema (customers, requests, statuses, request_notes)</li>
-        </ul>
+    <p>
+      This page describes the high-level architecture of <strong>TheShopper System</strong>,
+      a personal shopping request platform developed by Emmanuel and Yazmin.
+    </p>
 
-        <pre>
-Browser (UI pages)
-   |
-   | HTTP (GET/POST/PUT/DELETE)
-   v
-JavaScript Web Server (routes + validation)
-   |
-   | SQL queries
-   v
-SQLite Database
-        </pre>
-      </section>
+    <!-- SYSTEM OVERVIEW -->
+    <section class="card pad">
+      <h2>System Overview</h2>
 
-      <section class="card pad">
-        <h2>Data flow</h2>
-        <ol>
-          <li>Customer submits a request (item, size, budget, preferences).</li>
-          <li>Server validates and inserts into <code>requests</code> with default status <code>New</code>.</li>
-          <li>Concierge updates status (In Progress → Sourced → Completed).</li>
-          <li>Concierge adds notes into <code>request_notes</code>.</li>
-          <li>Customer views status and updates via request list/detail.</li>
-        </ol>
-      </section>
-    </div>
-
-    <section class="card pad" style="margin-top:18px;">
-      <h2>Non-functional considerations</h2>
       <ul>
-        <li><strong>Accessibility:</strong> semantic HTML, labels, contrast, keyboard-friendly nav.</li>
-        <li><strong>Maintainability:</strong> clean schema + predictable routes.</li>
-        <li><strong>Security (future):</strong> auth for concierge/admin actions.</li>
+        <li><strong>Client:</strong> HTML, CSS, and JavaScript user interface</li>
+        <li><strong>Server:</strong> JavaScript backend handling API routes</li>
+        <li><strong>Database:</strong> SQLite database storing requests and users</li>
+      </ul>
+
+      <pre>
+User (Browser)
+     |
+     | HTTP Requests (GET, POST, PATCH)
+     v
+TheShopper Server (JavaScript)
+     |
+     | SQL Queries
+     v
+SQLite Database
+      </pre>
+    </section>
+
+    <!-- DATA FLOW -->
+    <section class="card pad" style="margin-top: 20px;">
+      <h2>Data Flow</h2>
+
+      <ol>
+        <li>User submits a shopping request (item, budget, preferences).</li>
+        <li>Server validates the request.</li>
+        <li>Data is stored in the database.</li>
+        <li>Admin (Emmanuel or Yazmin) reviews and updates the request.</li>
+        <li>User can view the request status at any time.</li>
+      </ol>
+    </section>
+
+    <!-- NON-FUNCTIONAL -->
+    <section class="card pad" style="margin-top: 20px;">
+      <h2>Non-Functional Requirements</h2>
+
+      <ul>
+        <li><strong>Usability:</strong> Simple and clear interface</li>
+        <li><strong>Performance:</strong> Fast response using lightweight backend</li>
+        <li><strong>Security:</strong> Admin access protected by password</li>
+        <li><strong>Maintainability:</strong> Clean and modular code structure</li>
       </ul>
     </section>
+
   </main>
 
+  <!-- FOOTER -->
   <footer>
+    <p>Developed by Emmanuel & Yazmin</p>
     <p><a href="./index.html">Back to Team Home</a></p>
   </footer>
+
 </body>
 </html>

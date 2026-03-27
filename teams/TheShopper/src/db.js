@@ -6,7 +6,7 @@ const ROOT = dirname(fromFileUrl(import.meta.url));
 
 const DATA_DIR = join(ROOT, "..", "data");
 
-const DB_PATH = join(DATA_DIR, "sourceflow.db");
+const DB_PATH = join(DATA_DIR, "TheShopper System.db");
 
 let dbInstance = null;
 
